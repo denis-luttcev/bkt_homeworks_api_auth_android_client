@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">bkt_homeworks_api_auth_android_client</string>
+    <string name="hide">Hide it</string>
+    <string name="ads">Ads post</string>
+    <string name="new_post_hint">Write something</string>
+</resources>
