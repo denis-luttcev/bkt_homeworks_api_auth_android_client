@@ -190,7 +190,7 @@ class PostAdapter(private val list : MutableList<Post>)
     private fun asyncUpdateSocial(id: UUID, attribute: String, mode: Mode) = launch {
         withContext(Dispatchers.IO) {
             val client = HttpClient()
-            val url = "https://api-crud-server-luttcev.herokuapp.com/api/v1/posts/${id}/${attribute}"
+            val url = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts/${id}/${attribute}"
             when (mode) {
                 Mode.POST -> client.post<String>(url)
                 Mode.DELETE -> client.delete<String>(url)
@@ -212,7 +212,7 @@ class PostAdapter(private val list : MutableList<Post>)
                 }
             }
             post.id = client.post<UUID> {
-                url("https://api-crud-server-luttcev.herokuapp.com/api/v1/posts")
+                url("https://api-auth-server-luttcev.herokuapp.com/api/v1/posts")
                 contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 body = Gson().toJsonTree(post)
             }

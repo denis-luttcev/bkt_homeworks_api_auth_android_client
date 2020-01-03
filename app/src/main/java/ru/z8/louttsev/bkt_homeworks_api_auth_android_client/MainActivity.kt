@@ -15,8 +15,8 @@ import kotlinx.coroutines.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
 
-const val postsUrl = "https://api-crud-server-luttcev.herokuapp.com/api/v1/posts"
-const val adsUrl = "https://api-crud-server-luttcev.herokuapp.com/api/v1/ads"
+const val postsUrl = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts"
+const val adsUrl = "https://api-auth-server-luttcev.herokuapp.com/api/v1/ads"
 
 @KtorExperimentalAPI
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
