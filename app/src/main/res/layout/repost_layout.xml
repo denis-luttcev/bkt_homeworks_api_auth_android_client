@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:background="@color/colorSecondaryBackground"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/avatarIv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_avatar" />
+
+    <TextView
+        android:id="@+id/createdTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:textColor="@color/colorSecondaryText"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toTopOf="@+id/authorTv"
+        app:layout_constraintStart_toEndOf="@+id/avatarIv"
+        app:layout_constraintTop_toTopOf="@id/avatarIv"
+        app:layout_constraintVertical_chainStyle="spread"
+        tools:text="5 min. ago" />
+
+    <TextView
+        android:id="@+id/adsTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ads"
+        android:textColor="@color/colorAccent"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/authorTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/colorPrimaryText"
+        app:layout_constraintBottom_toBottomOf="@id/avatarIv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/createdTv"
+        app:layout_constraintTop_toBottomOf="@+id/createdTv"
+        app:layout_constraintVertical_chainStyle="spread"
+        tools:text="Author" />
+
+    <TextView
+        android:id="@+id/contentTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ellipsize="end"
+        android:maxLines="6"
+        android:textColor="@color/colorPrimaryText"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/avatarIv"
+        tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." />
+
+    <FrameLayout
+        android:id="@+id/containerFl"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contentTv">
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/previewIv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/containerFl"
+        tools:srcCompat="@tools:sample/backgrounds/scenic[1]" />
+
+    <ImageButton
+        android:id="@+id/playBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="@+id/previewIv"
+        app:layout_constraintEnd_toEndOf="@+id/previewIv"
+        app:layout_constraintStart_toStartOf="@+id/previewIv"
+        app:layout_constraintTop_toTopOf="@id/previewIv"
+        app:srcCompat="@drawable/ic_play" />
+
+    <ImageView
+        android:id="@+id/locationIv"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/addressTv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/addressTv"
+        app:srcCompat="@drawable/ic_location" />
+
+    <TextView
+        android:id="@+id/addressTv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="16dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/colorPrimaryText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/locationIv"
+        app:layout_constraintTop_toBottomOf="@id/previewIv"
+        tools:text="St. Petersburg, Nekrasova str., 13" />
+
+    <Button
+        android:id="@+id/hideBtn"
+        style="@android:style/Widget.Holo.Light.Button.Borderless.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:text="@string/hide"
+        android:textColor="@android:color/holo_blue_light"
+        app:layout_constraintBottom_toBottomOf="@+id/likeCb"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/likeCb" />
+
+    <ImageView
+        android:id="@+id/viewsIv"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toBottomOf="@+id/hideBtn"
+        app:layout_constraintStart_toEndOf="@+id/hideBtn"
+        app:layout_constraintTop_toTopOf="@+id/hideBtn"
+        app:srcCompat="@drawable/ic_views" />
+
+    <TextView
+        android:id="@+id/viewsCountTv"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:textColor="@color/colorSecondaryText"
+        app:layout_constraintBottom_toBottomOf="@+id/likesCountTv"
+        app:layout_constraintStart_toEndOf="@+id/viewsIv"
+        app:layout_constraintTop_toTopOf="@+id/likesCountTv"
+        tools:text="10" />
+
+    <CheckBox
+        android:id="@+id/likeCb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:button="@drawable/ic_like_selector"
+        app:layout_constraintEnd_toStartOf="@+id/likesCountTv"
+        app:layout_constraintTop_toTopOf="@+id/commentCb" />
+
+    <TextView
+        android:id="@+id/likesCountTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:textColor="@color/colorSecondaryText"
+        app:layout_constraintBaseline_toBaselineOf="@id/likeCb"
+        app:layout_constraintEnd_toStartOf="@+id/commentCb"
+        tools:text="10" />
+
+    <CheckBox
+        android:id="@+id/commentCb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:button="@drawable/ic_comment_selector"
+        app:layout_constraintEnd_toStartOf="@+id/commentsCountTv"
+        app:layout_constraintTop_toTopOf="@+id/shareCb" />
+
+    <TextView
+        android:id="@+id/commentsCountTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:textColor="@color/colorSecondaryText"
+        app:layout_constraintBaseline_toBaselineOf="@id/commentCb"
+        app:layout_constraintEnd_toStartOf="@+id/shareCb"
+        tools:text="8" />
+
+    <CheckBox
+        android:id="@+id/shareCb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="4dp"
+        android:button="@drawable/ic_share_selector"
+        app:layout_constraintEnd_toStartOf="@+id/sharesCountTv"
+        app:layout_constraintTop_toBottomOf="@+id/addressTv" />
+
+    <TextView
+        android:id="@+id/sharesCountTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorSecondaryText"
+        app:layout_constraintBaseline_toBaselineOf="@id/shareCb"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="12" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/locationGrp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="locationIv,addressTv"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="16dp" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/videoGrp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="previewIv,playBtn"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="16dp" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/socialGrp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="shareCb,commentsCountTv,likesCountTv,sharesCountTv,likeCb,commentCb,viewsIv,viewsCountTv"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="16dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>
