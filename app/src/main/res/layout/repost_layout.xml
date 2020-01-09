@@ -133,9 +133,9 @@
         android:layout_height="0dp"
         android:text="@string/hide"
         android:textColor="@android:color/holo_blue_light"
-        app:layout_constraintBottom_toBottomOf="@+id/likeCb"
+        app:layout_constraintBottom_toBottomOf="@+id/likeCbRepost"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/likeCb" />
+        app:layout_constraintTop_toTopOf="@+id/likeCbRepost" />
 
     <ImageView
         android:id="@+id/viewsIv"
@@ -153,65 +153,65 @@
         android:layout_height="0dp"
         android:layout_marginStart="4dp"
         android:textColor="@color/colorSecondaryText"
-        app:layout_constraintBottom_toBottomOf="@+id/likesCountTv"
+        app:layout_constraintBottom_toBottomOf="@+id/likesCountTvRepost"
         app:layout_constraintStart_toEndOf="@+id/viewsIv"
-        app:layout_constraintTop_toTopOf="@+id/likesCountTv"
+        app:layout_constraintTop_toTopOf="@+id/likesCountTvRepost"
         tools:text="10" />
 
     <CheckBox
-        android:id="@+id/likeCb"
+        android:id="@+id/likeCbRepost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:button="@drawable/ic_like_selector"
-        app:layout_constraintEnd_toStartOf="@+id/likesCountTv"
-        app:layout_constraintTop_toTopOf="@+id/commentCb" />
+        app:layout_constraintEnd_toStartOf="@+id/likesCountTvRepost"
+        app:layout_constraintTop_toTopOf="@+id/commentCbRepost" />
 
     <TextView
-        android:id="@+id/likesCountTv"
+        android:id="@+id/likesCountTvRepost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:textColor="@color/colorSecondaryText"
-        app:layout_constraintBaseline_toBaselineOf="@id/likeCb"
-        app:layout_constraintEnd_toStartOf="@+id/commentCb"
+        app:layout_constraintBaseline_toBaselineOf="@id/likeCbRepost"
+        app:layout_constraintEnd_toStartOf="@+id/commentCbRepost"
         tools:text="10" />
 
     <CheckBox
-        android:id="@+id/commentCb"
+        android:id="@+id/commentCbRepost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:button="@drawable/ic_comment_selector"
-        app:layout_constraintEnd_toStartOf="@+id/commentsCountTv"
-        app:layout_constraintTop_toTopOf="@+id/shareCb" />
+        app:layout_constraintEnd_toStartOf="@+id/commentsCountTvRepost"
+        app:layout_constraintTop_toTopOf="@+id/shareCbRepost" />
 
     <TextView
-        android:id="@+id/commentsCountTv"
+        android:id="@+id/commentsCountTvRepost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:textColor="@color/colorSecondaryText"
-        app:layout_constraintBaseline_toBaselineOf="@id/commentCb"
-        app:layout_constraintEnd_toStartOf="@+id/shareCb"
+        app:layout_constraintBaseline_toBaselineOf="@id/commentCbRepost"
+        app:layout_constraintEnd_toStartOf="@+id/shareCbRepost"
         tools:text="8" />
 
     <CheckBox
-        android:id="@+id/shareCb"
+        android:id="@+id/shareCbRepost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="4dp"
         android:button="@drawable/ic_share_selector"
-        app:layout_constraintEnd_toStartOf="@+id/sharesCountTv"
+        app:layout_constraintEnd_toStartOf="@+id/sharesCountTvRepost"
         app:layout_constraintTop_toBottomOf="@+id/addressTv" />
 
     <TextView
-        android:id="@+id/sharesCountTv"
+        android:id="@+id/sharesCountTvRepost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/colorSecondaryText"
-        app:layout_constraintBaseline_toBaselineOf="@id/shareCb"
+        app:layout_constraintBaseline_toBaselineOf="@id/shareCbRepost"
         app:layout_constraintEnd_toEndOf="parent"
         tools:text="12" />
 
@@ -237,7 +237,7 @@
         android:id="@+id/socialGrp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="shareCb,commentsCountTv,likesCountTv,sharesCountTv,likeCb,commentCb,viewsIv,viewsCountTv"
+        app:constraint_referenced_ids="shareCbRepost,commentsCountTvRepost,likesCountTvRepost,sharesCountTvRepost,likeCbRepost,commentCbRepost,viewsIv,viewsCountTv"
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="16dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
