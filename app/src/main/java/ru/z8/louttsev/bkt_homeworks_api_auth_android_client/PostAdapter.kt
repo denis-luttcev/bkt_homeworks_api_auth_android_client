@@ -226,7 +226,7 @@ class PostAdapter(private val list : MutableList<Post>)
             post.id = client.post {
                 url("https://api-auth-server-luttcev.herokuapp.com/api/v1/posts")
                 contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                body = Gson().toJsonTree(post)
+                body = Gson().toJsonTree(Post.fromModel(post))
             }
         }
         list.add(0, post)
