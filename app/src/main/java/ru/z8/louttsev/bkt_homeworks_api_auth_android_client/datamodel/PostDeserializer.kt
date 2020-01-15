@@ -36,20 +36,19 @@ class PostDeserializer : JsonDeserializer<Post> {
             shares = data.get("shares").asInt
             views = data.get("views").asInt
 
-            when (post.type) {
-                TEXT -> {} // no special
-                EVENT -> {
-                    (post as EventPost).address = data.get("address").asString
+            when (post) {
+                is EventPost -> {
+                    post.address = data.get("address").asString
                     post.location = context!!
                         .deserialize(data.get("location"), EventPost.Location::class.java)
                 }
-                VIDEO -> {
-                    (post as VideoPost).url = data.get("url").asString
+                is VideoPost -> {
+                    post.videoUrl = data.get("videoUrl").asString
                 }
-                REPOST -> {
-                    (post as Repost).source = UUID.fromString(data.get("source").asString)
+                is Repost -> {
+                    post.source = UUID.fromString(data.get("source").asString)
                 }
-                ADS -> {} // ignored
+                else -> {} // ignored
             }
         }
         return post

@@ -18,6 +18,12 @@ class Repost(
     var source : UUID? = null
 ) : Post(id, Type.REPOST, author, content, created, liked, likes, commented, comments, shared, shares, views)
 {
+    class RequestDto(model: Repost) : Post.RequestDto(model) {
+        val source: UUID? = model.source
+    }
+
+    override fun toDto() = RequestDto(this)
+
     override fun complete(): String = "This is repost of " + source.toString()
     override fun open(context: Context) {} // ignored
 }

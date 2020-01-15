@@ -17,6 +17,10 @@ class TextPost(
     views : Int = 0
 ) : Post(id, Type.TEXT, author, content, created, liked, likes, commented, comments, shared, shares, views)
 {
+    class RequestDto(model: TextPost) : Post.RequestDto(model)
+
+    override fun toDto() = RequestDto(this)
+
     override fun complete(): String = ""
     override fun open(context : Context) {} // ignored
 }

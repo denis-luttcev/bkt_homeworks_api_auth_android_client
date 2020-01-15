@@ -22,14 +22,20 @@ class VideoPost(
     shared : Boolean = false,
     shares : Int = 0,
     views : Int = 0,
-    var url : String = ""
+    var videoUrl : String = ""
 ) : Post(id, Type.VIDEO, author, content, created, liked, likes, commented, comments, shared, shares, views)
 {
-    override fun complete(): String = url
+    class RequestDto(model: VideoPost) : Post.RequestDto(model) {
+        val videoUrl: String = model.videoUrl
+    }
+
+    override fun toDto() = RequestDto(this)
+
+    override fun complete(): String = videoUrl
     override fun open(context: Context) {
         context.startActivity(Intent().apply {
             action = Intent.ACTION_VIEW
-            data = Uri.parse(url)
+            data = Uri.parse(videoUrl)
         })
     }
 
@@ -37,7 +43,7 @@ class VideoPost(
         fun parseVideoUrl(url : String) = Regex("""v=""").split(url)[1]
 
         fun formPreviewUrl()
-                = "https://img.youtube.com/vi/${parseVideoUrl(url)}/maxresdefault.jpg"
+                = "https://img.youtube.com/vi/${parseVideoUrl(videoUrl)}/maxresdefault.jpg"
 
         doAsyncResult {
             val image = BitmapFactory

@@ -21,6 +21,13 @@ class EventPost(
     var location : Location? = null
 ) : Post(id, Type.EVENT, author, content, created, liked, likes, commented, comments, shared, shares, views)
 {
+    class RequestDto(model: EventPost) : Post.RequestDto(model) {
+        val address: String = model.address
+        val location: Location? = model.location
+    }
+
+    override fun toDto() = RequestDto(this)
+
     override fun complete(): String = address
     override fun open(context : Context) {
         val (latitude, longitude) = location!!

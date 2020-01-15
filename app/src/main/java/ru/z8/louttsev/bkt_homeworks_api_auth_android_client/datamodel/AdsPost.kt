@@ -17,14 +17,18 @@ class AdsPost(
     shared : Boolean = false,
     shares : Int = 0,
     views : Int = 0,
-    var url : String = ""
+    var adsUrl : String = ""
 ) : Post(id, Type.ADS, author, content, created, liked, likes, commented, comments, shared, shares, views)
 {
-    override fun complete(): String = url
+    // these are stubs (not used)
+    class RequestDto(model: AdsPost) : Post.RequestDto(model)
+    override fun toDto() = RequestDto(this)
+
+    override fun complete(): String = adsUrl
     override fun open(context: Context) {
         context.startActivity(Intent().apply {
             action = Intent.ACTION_VIEW
-            data = Uri.parse(url)
+            data = Uri.parse(adsUrl)
         })
     }
 }

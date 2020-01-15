@@ -23,6 +23,18 @@ abstract class Post(
         TEXT, EVENT, VIDEO, REPOST, ADS
     }
 
+    abstract class RequestDto(model: Post) {
+        val type: Type = model.type
+        val author: String = model.author
+        val content: String = model.content
+    }
+
+    abstract fun toDto() : RequestDto
+
+    companion object {
+        fun fromModel(model: Post) = model.toDto()
+    }
+
     val age : String = publicationAge(System.currentTimeMillis() - created)
 
     private fun publicationAge(publishedAgoInMillis : Long) : String {

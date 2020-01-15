@@ -8,6 +8,7 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.marginEnd
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import io.ktor.client.HttpClient
@@ -129,38 +130,41 @@ class PostAdapter(private val list : MutableList<Post>)
             contentTv.text = post.content
             viewsCountTv.text = if (post.views > 0) post.views.toString() else ""
 
-            if (post is EventPost) {
-                locationGrp.visibility = View.VISIBLE
-                addressTv.text = post.address
-                addressTv.setOnClickListener {
-                    post.open(context)
+            when (post) {
+                is EventPost -> {
+                    locationGrp.visibility = View.VISIBLE
+                    addressTv.text = post.address
+                    addressTv.setOnClickListener {
+                        post.open(context)
+                    }
+                    locationIv.setOnClickListener {
+                        post.open(context)
+                    }
                 }
-                locationIv.setOnClickListener {
-                    post.open(context)
+                is VideoPost -> {
+                    videoGrp.visibility = View.VISIBLE
+                    post.asyncUpdateVideoPreview(previewIv)
+                    playBtn.setOnClickListener {
+                        post.open(context)
+                    }
                 }
-            }
-            if (post is VideoPost) {
-                videoGrp.visibility = View.VISIBLE
-                post.asyncUpdateVideoPreview(previewIv)
-                playBtn.setOnClickListener {
-                    post.open(context)
+                is Repost -> {
+                    containerFl.visibility = View.VISIBLE
+                    val repostView = LayoutInflater.from(context)
+                        .inflate(R.layout.repost_layout, containerFl, false)
+                    initPostView(repostView as ConstraintLayout, findSource(post))
+                    repostView.socialGrp.visibility = View.GONE
+                    containerFl.addView(repostView)
                 }
-            }
-            if (post is Repost) {
-                containerFl.visibility = View.VISIBLE
-                val repostView = LayoutInflater.from(context)
-                    .inflate(R.layout.repost_layout, containerFl, false)
-                initPostView(repostView as ConstraintLayout, findSource(post))
-                repostView.socialGrp.visibility = View.GONE
-                containerFl.addView(repostView)
-            }
-            if (post is AdsPost) {
-                this.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAdsBackground))
-                adsTv.visibility = View.VISIBLE
-                socialGrp.visibility = View.GONE
-                contentTv.setOnClickListener {
-                    post.open(context)
+                is AdsPost -> {
+                    this.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAdsBackground))
+                    adsTv.visibility = View.VISIBLE
+                    socialGrp.visibility = View.GONE
+                    contentTv.setOnClickListener {
+                        post.open(context)
+                    }
                 }
+                else -> {} // ignored
             }
         }
     }
