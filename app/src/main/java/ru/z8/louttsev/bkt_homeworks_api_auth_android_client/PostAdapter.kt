@@ -8,13 +8,13 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.core.view.marginEnd
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.delete
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
@@ -29,11 +29,11 @@ import java.util.UUID
 @KtorExperimentalAPI
 class PostAdapter(private val list : MutableList<Post>)
     : RecyclerView.Adapter<RecyclerView.ViewHolder>(), CoroutineScope by MainScope() {
-    private lateinit var context : Context
+    private lateinit var context: Context
 
-    private val index : MutableMap<UUID, Post> = list.map { it.id to it }.toMap().toMutableMap()
+    private val index: MutableMap<UUID, Post> = list.map { it.id to it }.toMap().toMutableMap()
 
-    override fun onCreateViewHolder(parent : ViewGroup, viewType : Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         context = parent.context
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.post_card_layout, parent, false)
@@ -44,15 +44,15 @@ class PostAdapter(private val list : MutableList<Post>)
         return list.size
     }
 
-    override fun onBindViewHolder(holder : RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val post = list[position]
 
         with(holder.itemView) {
             likeCb.isChecked = post.liked
             updateSocialCountView(post.likes, post.liked, likesCountTv)
             likeCb.tag = position
-            likeCb.setOnClickListener { view : View ->
-                val thisPost : Post = list[view.tag as Int]
+            likeCb.setOnClickListener { view: View ->
+                val thisPost: Post = list[view.tag as Int]
                 if ((view as CheckBox).isChecked) {
                     thisPost.like()
                     asyncUpdateSocial(thisPost.id, "like", Mode.POST)
@@ -66,8 +66,8 @@ class PostAdapter(private val list : MutableList<Post>)
             commentCb.isChecked = post.commented
             updateSocialCountView(post.comments, post.commented, commentsCountTv)
             commentCb.tag = position
-            commentCb.setOnClickListener { view : View ->
-                val thisPost : Post = list[view.tag as Int]
+            commentCb.setOnClickListener { view: View ->
+                val thisPost: Post = list[view.tag as Int]
                 if ((view as CheckBox).isChecked) {
                     //TODO: implement get comment text, its processing and display
                     thisPost.makeComment()
@@ -82,13 +82,14 @@ class PostAdapter(private val list : MutableList<Post>)
             shareCb.isChecked = post.shared
             updateSocialCountView(post.shares, post.shared, sharesCountTv)
             shareCb.tag = position
-            shareCb.setOnClickListener { view : View ->
-                val thisPost : Post = list[view.tag as Int]
+            shareCb.setOnClickListener { view: View ->
+                val thisPost: Post = list[view.tag as Int]
                 if ((view as CheckBox).isChecked) {
                     thisPost.share(context)
                     asyncUpdateSocial(thisPost.id, "share", Mode.POST)
                     // temporarily reposting
-                    val newPost = Repost(author = "Netology", content = "Reposted", source = thisPost.id)
+                    val newPost =
+                        Repost(author = "Netology", content = "Reposted", source = thisPost.id)
                     savePost(newPost)
                 } else {
                     shareCb.isChecked = post.shared // temporarily enabled
@@ -101,8 +102,8 @@ class PostAdapter(private val list : MutableList<Post>)
             }
 
             hideBtn.tag = position
-            hideBtn.setOnClickListener { view : View ->
-                val thisPost : Post = list[view.tag as Int]
+            hideBtn.setOnClickListener { view: View ->
+                val thisPost: Post = list[view.tag as Int]
                 list.remove(thisPost)
                 notifyDataSetChanged()
             }
@@ -157,20 +158,26 @@ class PostAdapter(private val list : MutableList<Post>)
                     containerFl.addView(repostView)
                 }
                 is AdsPost -> {
-                    this.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAdsBackground))
+                    this.setBackgroundColor(
+                        ContextCompat.getColor(
+                            context,
+                            R.color.colorAdsBackground
+                        )
+                    )
                     adsTv.visibility = View.VISIBLE
                     socialGrp.visibility = View.GONE
                     contentTv.setOnClickListener {
                         post.open(context)
                     }
                 }
-                else -> {} // ignored
+                else -> {
+                } // ignored
             }
         }
     }
 
-    private fun findSource(post : Repost) : Post {
-        val sourcePost : Post = index.getValue(post.source!!)
+    private fun findSource(post: Repost): Post {
+        val sourcePost: Post = index.getValue(post.source!!)
         return if (sourcePost !is Repost) sourcePost else findSource(sourcePost)
     }
 
@@ -180,15 +187,19 @@ class PostAdapter(private val list : MutableList<Post>)
         textView: TextView
     ) {
         textView.text = if (count > 0) count.toString() else ""
-        textView.setTextColor(ContextCompat.getColor(context,
-            if (isSelected) R.color.colorSelected else R.color.colorSecondaryText))
+        textView.setTextColor(
+            ContextCompat.getColor(
+                context,
+                if (isSelected) R.color.colorSelected else R.color.colorSecondaryText
+            )
+        )
     }
 
-    fun diluteWithAds(adsList : MutableList<AdsPost>) : PostAdapter {
+    fun diluteWithAds(adsList: MutableList<AdsPost>): PostAdapter {
         val postsListSize = list.size
         val adsListSize = adsList.size
-        val ratio : Int = postsListSize / adsListSize
-        val adsLimit : Int = if (ratio >= 3 ) adsListSize else postsListSize / 3
+        val ratio: Int = postsListSize / adsListSize
+        val adsLimit: Int = if (ratio >= 3) adsListSize else postsListSize / 3
 
         adsList.forEachIndexed { index, adsPost ->
             if (index < adsLimit) {
@@ -202,7 +213,8 @@ class PostAdapter(private val list : MutableList<Post>)
     private fun asyncUpdateSocial(id: UUID, attribute: String, mode: Mode) = launch {
         withContext(Dispatchers.IO) {
             val client = HttpClient()
-            val url = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts/${id}/${attribute}"
+            val url =
+                "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts/${id}/${attribute}"
             when (mode) {
                 Mode.POST -> client.post<String>(url)
                 Mode.DELETE -> client.delete<String>(url)
@@ -218,9 +230,6 @@ class PostAdapter(private val list : MutableList<Post>)
                     acceptContentTypes = listOf(
                         ContentType.Application.Json
                     )
-                    serializer = GsonSerializer {
-                        registerTypeAdapter(Post::class.java, PostDeserializer())
-                    }
                 }
             }
             post.id = client.post {
@@ -228,10 +237,31 @@ class PostAdapter(private val list : MutableList<Post>)
                 contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 body = Gson().toJsonTree(Post.fromModel(post))
             }
+            client.close()
         }
-        list.add(0, post)
-        index[post.id] = post
-        notifyDataSetChanged()
+    }
+
+    fun updateData() = launch {
+        withContext(Dispatchers.IO) {
+            val client = HttpClient {
+                install(JsonFeature) {
+                    acceptContentTypes = listOf(
+                        ContentType.Application.Json
+                    )
+                    serializer = GsonSerializer {
+                        registerTypeAdapter(Post::class.java, PostDeserializer())
+                    }
+                }
+            }
+            val url = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts/${list.size}"
+            val newPosts = client.get<List<Post>>(url).toList()
+            client.close()
+
+            list.addAll(newPosts)
+            index.putAll(newPosts.map { it.id to it}.toMap())
+
+            //TODO: notifyDataSetChanged() in UI
+        }
     }
 }
 
