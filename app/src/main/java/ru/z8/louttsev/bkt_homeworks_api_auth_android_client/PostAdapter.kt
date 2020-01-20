@@ -30,11 +30,13 @@ import java.util.UUID
 class PostAdapter(private val list : MutableList<Post>)
     : RecyclerView.Adapter<RecyclerView.ViewHolder>(), CoroutineScope by MainScope() {
     private lateinit var context: Context
+    private lateinit var recyclerView: RecyclerView
 
     private val index: MutableMap<UUID, Post> = list.map { it.id to it }.toMap().toMutableMap()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         context = parent.context
+        recyclerView = parent as RecyclerView
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.post_card_layout, parent, false)
         return PostViewHolder(view)
@@ -223,7 +225,7 @@ class PostAdapter(private val list : MutableList<Post>)
         }
     }
 
-    fun savePost(post: Post) = launch {
+    fun savePost(post: Post) = launch(Dispatchers.Main) {
         withContext(Dispatchers.IO) {
             val client = HttpClient {
                 install(JsonFeature) {
@@ -239,9 +241,13 @@ class PostAdapter(private val list : MutableList<Post>)
             }
             client.close()
         }
+
+        updateData()
     }
 
-    fun updateData() = launch {
+    fun updateData() = launch(Dispatchers.Main) {
+        lateinit var newPosts : List<Post>
+
         withContext(Dispatchers.IO) {
             val client = HttpClient {
                 install(JsonFeature) {
@@ -254,14 +260,16 @@ class PostAdapter(private val list : MutableList<Post>)
                 }
             }
             val url = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts/${list.size}"
-            val newPosts = client.get<List<Post>>(url).toList()
+            newPosts = client.get<List<Post>>(url).toList()
+
             client.close()
-
-            list.addAll(newPosts)
-            index.putAll(newPosts.map { it.id to it}.toMap())
-
-            //TODO: notifyDataSetChanged() in UI
         }
+
+        list.addAll(0, newPosts)
+        index.putAll(newPosts.map { it.id to it}.toMap())
+        notifyItemRangeInserted(0, newPosts.size)
+
+        recyclerView.smoothScrollToPosition(0)
     }
 }
 

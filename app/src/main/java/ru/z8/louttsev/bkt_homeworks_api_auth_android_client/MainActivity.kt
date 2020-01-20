@@ -31,7 +31,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         sendBtn.onClick {
             val newPost = TextPost(author = "Netology", content = newPostTv.text.toString())
             postAdapter.savePost(newPost)
-            postAdapter.updateData()
             newPostTv.text.clear()
         }
     }
