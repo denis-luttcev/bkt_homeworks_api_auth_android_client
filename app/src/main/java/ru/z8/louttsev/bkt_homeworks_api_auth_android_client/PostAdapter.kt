@@ -1,6 +1,5 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,28 +25,53 @@ import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
 import java.util.UUID
 
+fun List<AdsPost>.circularIterator() : CircularIterator {
+    return CircularIterator(this)
+}
+
+class CircularIterator(private val list: List<AdsPost>) : Iterator<AdsPost> {
+    private var index: Int = -1
+
+    override fun hasNext(): Boolean = index < list.size - 1
+
+    override fun next(): AdsPost {
+        if (hasNext()) {
+            index++
+        } else {
+            index = 0
+
+        }
+        return list[index]
+    }
+}
+
 @KtorExperimentalAPI
-class PostAdapter(private val list : MutableList<Post>)
-    : RecyclerView.Adapter<RecyclerView.ViewHolder>(), CoroutineScope by MainScope() {
-    private lateinit var context: Context
-    private lateinit var recyclerView: RecyclerView
+class PostAdapter(
+    private val list : MutableList<Post>,
+    ads: MutableList<AdsPost>,
+    private val listingRv: RecyclerView
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), CoroutineScope by MainScope() {
 
     private val index: MutableMap<UUID, Post> = list.map { it.id to it }.toMap().toMutableMap()
 
+    private val adsIterator: Iterator<AdsPost> = ads.circularIterator()
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        context = parent.context
-        recyclerView = parent as RecyclerView
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.post_card_layout, parent, false)
         return PostViewHolder(view)
     }
 
     override fun getItemCount(): Int {
-        return list.size
+        return list.size + list.size / 3
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val post = list[position]
+        val post = if ((position + 1) % 4 !=0) {
+            list[position - (position + 1) / 4]
+        } else {
+            adsIterator.next()
+        }
 
         with(holder.itemView) {
             likeCb.isChecked = post.liked
@@ -122,6 +146,7 @@ class PostAdapter(private val list : MutableList<Post>)
                     R.color.colorSecondaryBackground
                 )
             )
+            socialGrp.visibility = View.VISIBLE
             adsTv.visibility = View.GONE
             locationGrp.visibility = View.GONE
             videoGrp.visibility = View.GONE
@@ -269,7 +294,7 @@ class PostAdapter(private val list : MutableList<Post>)
         index.putAll(newPosts.map { it.id to it}.toMap())
         notifyItemRangeInserted(0, newPosts.size)
 
-        recyclerView.smoothScrollToPosition(0)
+        listingRv.smoothScrollToPosition(0)
     }
 }
 

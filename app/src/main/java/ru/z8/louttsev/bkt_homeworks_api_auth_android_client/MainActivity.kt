@@ -33,6 +33,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             postAdapter.savePost(newPost)
             newPostTv.text.clear()
         }
+
+        swipeContainer.setOnRefreshListener {
+            postAdapter.updateData()
+            swipeContainer.isRefreshing = false
+        }
     }
 
     private fun fetchData() = launch {
@@ -61,7 +66,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             client.close()
         }
 
-        postAdapter = PostAdapter(postList)//.diluteWithAds(adsList)
+        postAdapter = PostAdapter(postList, adsList, postListing)
 
         with(postListing) {
             layoutManager = LinearLayoutManager(this@MainActivity)
