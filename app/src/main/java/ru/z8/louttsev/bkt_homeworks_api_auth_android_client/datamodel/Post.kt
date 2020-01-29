@@ -20,7 +20,7 @@ abstract class Post(
 ) {
 
     enum class Type {
-        TEXT, EVENT, VIDEO, REPOST, ADS
+        TEXT, EVENT, VIDEO, REPOST, ADS, IMAGE
     }
 
     abstract class RequestDto(model: Post) {

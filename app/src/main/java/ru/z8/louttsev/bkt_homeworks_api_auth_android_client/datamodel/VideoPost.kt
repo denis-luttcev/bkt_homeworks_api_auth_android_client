@@ -2,12 +2,7 @@ package ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.net.Uri
-import android.widget.ImageView
-import org.jetbrains.anko.doAsyncResult
-import org.jetbrains.anko.uiThread
-import java.net.URL
 import java.util.UUID
 
 class VideoPost(
@@ -39,19 +34,7 @@ class VideoPost(
         })
     }
 
-    fun asyncUpdateVideoPreview(imageView : ImageView) {
-        fun parseVideoUrl(url : String) = Regex("""v=""").split(url)[1]
+    private fun parseVideoUrl(url : String) = Regex("""v=""").split(url)[1]
 
-        fun formPreviewUrl()
-                = "https://img.youtube.com/vi/${parseVideoUrl(videoUrl)}/maxresdefault.jpg"
-
-        doAsyncResult {
-            val image = BitmapFactory
-                .decodeStream(
-                    URL(formPreviewUrl())
-                        .openConnection()
-                        .getInputStream())
-            uiThread { imageView.setImageBitmap(image) }
-        }
-    }
+    fun getImageUrl() = "https://img.youtube.com/vi/${parseVideoUrl(videoUrl)}/maxresdefault.jpg"
 }

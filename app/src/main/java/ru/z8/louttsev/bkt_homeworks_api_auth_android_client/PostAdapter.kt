@@ -1,9 +1,12 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
@@ -23,6 +26,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.post_card_layout.view.*
 import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
+import java.net.URL
 import java.util.UUID
 
 fun List<AdsPost>.circularIterator() : CircularIterator {
@@ -149,6 +153,7 @@ class PostAdapter(
             socialGrp.visibility = View.VISIBLE
             adsTv.visibility = View.GONE
             locationGrp.visibility = View.GONE
+            playBtn.visibility = View.VISIBLE
             videoGrp.visibility = View.GONE
             containerFl.visibility = View.GONE
             containerFl.removeAllViews()
@@ -171,7 +176,7 @@ class PostAdapter(
                 }
                 is VideoPost -> {
                     videoGrp.visibility = View.VISIBLE
-                    post.asyncUpdateVideoPreview(previewIv)
+                    asyncUpdatePreview(post, previewIv)
                     playBtn.setOnClickListener {
                         post.open(context)
                     }
@@ -197,8 +202,12 @@ class PostAdapter(
                         post.open(context)
                     }
                 }
-                else -> {
-                } // ignored
+                is ImagePost -> {
+                    videoGrp.visibility = View.VISIBLE
+                    playBtn.visibility = View.GONE
+                    asyncUpdatePreview(post, previewIv)
+                }
+                else -> {} // ignored
             }
         }
     }
@@ -222,19 +231,28 @@ class PostAdapter(
         )
     }
 
-    fun diluteWithAds(adsList: MutableList<AdsPost>): PostAdapter {
-        val postsListSize = list.size
-        val adsListSize = adsList.size
-        val ratio: Int = postsListSize / adsListSize
-        val adsLimit: Int = if (ratio >= 3) adsListSize else postsListSize / 3
+    private fun asyncUpdatePreview(post: Post, imageView : ImageView) = launch {
+        var image: Bitmap? = null
 
-        adsList.forEachIndexed { index, adsPost ->
-            if (index < adsLimit) {
-                list.add((index + 1) * 3 + index, adsPost)
-            } else return@forEachIndexed
+        withContext(Dispatchers.IO) {
+            val client = HttpClient()
+            val url = when(post) {
+                is ImagePost -> {
+                    post.imageUrl
+                }
+                is VideoPost -> {
+                    post.getImageUrl()
+                }
+                else -> { "" } // ignored
+            }
+            image = BitmapFactory
+                .decodeStream(
+                    URL(url)
+                        .openConnection()
+                        .getInputStream())
+            client.close()
         }
-
-        return this
+        imageView.setImageBitmap(image)
     }
 
     private fun asyncUpdateSocial(id: UUID, attribute: String, mode: Mode) = launch {

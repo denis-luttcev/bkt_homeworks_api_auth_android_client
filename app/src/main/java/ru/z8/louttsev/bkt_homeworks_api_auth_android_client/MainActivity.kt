@@ -12,7 +12,6 @@ import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
-import org.jetbrains.anko.sdk27.coroutines.onClick
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
 
 const val postsUrl = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts"
@@ -28,7 +27,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         fetchData()
 
-        sendBtn.onClick {
+        sendBtn.setOnClickListener {
             val newPost = TextPost(author = "Netology", content = newPostTv.text.toString())
             postAdapter.savePost(newPost)
             newPostTv.text.clear()

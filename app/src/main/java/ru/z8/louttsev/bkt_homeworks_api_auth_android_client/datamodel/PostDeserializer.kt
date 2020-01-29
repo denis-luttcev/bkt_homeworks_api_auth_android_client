@@ -22,6 +22,7 @@ class PostDeserializer : JsonDeserializer<Post> {
             "VIDEO" -> VideoPost(id)
             "REPOST" -> Repost(id)
             "ADS" -> AdsPost(id)
+            "IMAGE" -> ImagePost(id)
             else -> null // ignored
         }
         with(post!!) {
@@ -47,6 +48,9 @@ class PostDeserializer : JsonDeserializer<Post> {
                 }
                 is Repost -> {
                     post.source = UUID.fromString(data.get("source").asString)
+                }
+                is ImagePost -> {
+                    post.imageUrl = data.get("imageUrl").asString
                 }
                 else -> {} // ignored
             }
