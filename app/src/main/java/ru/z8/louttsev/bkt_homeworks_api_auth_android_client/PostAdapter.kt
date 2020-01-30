@@ -153,8 +153,8 @@ class PostAdapter(
             socialGrp.visibility = View.VISIBLE
             adsTv.visibility = View.GONE
             locationGrp.visibility = View.GONE
-            playBtn.visibility = View.VISIBLE
-            videoGrp.visibility = View.GONE
+            previewIv.visibility = View.GONE
+            playBtn.visibility = View.GONE
             containerFl.visibility = View.GONE
             containerFl.removeAllViews()
 
@@ -175,7 +175,8 @@ class PostAdapter(
                     }
                 }
                 is VideoPost -> {
-                    videoGrp.visibility = View.VISIBLE
+                    previewIv.visibility = View.VISIBLE
+                    playBtn.visibility = View.VISIBLE
                     asyncUpdatePreview(post, previewIv)
                     playBtn.setOnClickListener {
                         post.open(context)
@@ -203,7 +204,7 @@ class PostAdapter(
                     }
                 }
                 is ImagePost -> {
-                    videoGrp.visibility = View.VISIBLE
+                    previewIv.visibility = View.VISIBLE
                     playBtn.visibility = View.GONE
                     asyncUpdatePreview(post, previewIv)
                 }
