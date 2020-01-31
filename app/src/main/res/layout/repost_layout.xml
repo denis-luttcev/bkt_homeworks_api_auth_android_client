@@ -231,4 +231,12 @@
         app:constraint_referenced_ids="shareCbRepost,commentsCountTvRepost,likesCountTvRepost,sharesCountTvRepost,likeCbRepost,commentCbRepost,viewsIv,viewsCountTv"
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="16dp" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/headerGrp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="authorTv,avatarIv,adsTv,createdTv"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="16dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

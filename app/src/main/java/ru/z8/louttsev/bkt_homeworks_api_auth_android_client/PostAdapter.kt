@@ -24,6 +24,20 @@ import io.ktor.http.contentType
 import io.ktor.http.withCharset
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.post_card_layout.view.*
+import kotlinx.android.synthetic.main.post_card_layout.view.addressTv
+import kotlinx.android.synthetic.main.post_card_layout.view.adsTv
+import kotlinx.android.synthetic.main.post_card_layout.view.authorTv
+import kotlinx.android.synthetic.main.post_card_layout.view.containerFl
+import kotlinx.android.synthetic.main.post_card_layout.view.contentTv
+import kotlinx.android.synthetic.main.post_card_layout.view.createdTv
+import kotlinx.android.synthetic.main.post_card_layout.view.hideBtn
+import kotlinx.android.synthetic.main.post_card_layout.view.locationGrp
+import kotlinx.android.synthetic.main.post_card_layout.view.locationIv
+import kotlinx.android.synthetic.main.post_card_layout.view.playBtn
+import kotlinx.android.synthetic.main.post_card_layout.view.previewIv
+import kotlinx.android.synthetic.main.post_card_layout.view.socialGrp
+import kotlinx.android.synthetic.main.post_card_layout.view.viewsCountTv
+import kotlinx.android.synthetic.main.repost_layout.view.*
 import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
 import java.net.URL
@@ -118,9 +132,7 @@ class PostAdapter(
                     thisPost.share(context)
                     asyncUpdateSocial(thisPost.id, "share", Mode.POST)
                     // temporarily reposting
-                    val newPost =
-                        Repost(author = "Netology", content = "Reposted", source = thisPost.id)
-                    savePost(newPost)
+                    (context as MainActivity).fillPostBody(Repost(author = "Netology", source = thisPost.id))
                 } else {
                     shareCb.isChecked = post.shared // temporarily enabled
                     /* temporarily disabled
@@ -142,7 +154,7 @@ class PostAdapter(
         initPostView(holder.itemView as ConstraintLayout, post)
     }
 
-    private fun initPostView(view: ConstraintLayout, post: Post) {
+    fun initPostView(view: ConstraintLayout, post: Post) {
         with(view) {
             this.setBackgroundColor(
                 ContextCompat.getColor(
@@ -188,6 +200,7 @@ class PostAdapter(
                         .inflate(R.layout.repost_layout, containerFl, false)
                     initPostView(repostView as ConstraintLayout, findSource(post))
                     repostView.socialGrp.visibility = View.GONE
+                    repostView.adsTv.visibility = View.GONE //TODO
                     containerFl.addView(repostView)
                 }
                 is AdsPost -> {

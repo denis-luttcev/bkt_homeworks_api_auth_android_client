@@ -38,13 +38,24 @@
         app:layout_constraintTop_toTopOf="@+id/newPostTv"
         app:srcCompat="@drawable/ic_send" />
 
+    <include
+        android:id="@+id/postBody"
+        layout="@layout/repost_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/newPostTv" />
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/newPostTv">
+        app:layout_constraintTop_toBottomOf="@id/postBody"
+        tools:layout_editor_absoluteX="8dp">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/postListing"
