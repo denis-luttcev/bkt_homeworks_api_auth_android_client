@@ -9,6 +9,7 @@ import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -24,20 +25,18 @@ import io.ktor.http.contentType
 import io.ktor.http.withCharset
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.post_card_layout.view.*
-import kotlinx.android.synthetic.main.post_card_layout.view.addressTv
-import kotlinx.android.synthetic.main.post_card_layout.view.adsTv
-import kotlinx.android.synthetic.main.post_card_layout.view.authorTv
-import kotlinx.android.synthetic.main.post_card_layout.view.containerFl
-import kotlinx.android.synthetic.main.post_card_layout.view.contentTv
-import kotlinx.android.synthetic.main.post_card_layout.view.createdTv
 import kotlinx.android.synthetic.main.post_card_layout.view.hideBtn
+import kotlinx.android.synthetic.main.post_card_layout.view.adsTv
 import kotlinx.android.synthetic.main.post_card_layout.view.locationGrp
-import kotlinx.android.synthetic.main.post_card_layout.view.locationIv
-import kotlinx.android.synthetic.main.post_card_layout.view.playBtn
 import kotlinx.android.synthetic.main.post_card_layout.view.previewIv
-import kotlinx.android.synthetic.main.post_card_layout.view.socialGrp
+import kotlinx.android.synthetic.main.post_card_layout.view.playBtn
+import kotlinx.android.synthetic.main.post_card_layout.view.containerFl
+import kotlinx.android.synthetic.main.post_card_layout.view.authorTv
+import kotlinx.android.synthetic.main.post_card_layout.view.createdTv
+import kotlinx.android.synthetic.main.post_card_layout.view.contentTv
 import kotlinx.android.synthetic.main.post_card_layout.view.viewsCountTv
-import kotlinx.android.synthetic.main.repost_layout.view.*
+import kotlinx.android.synthetic.main.post_card_layout.view.addressTv
+import kotlinx.android.synthetic.main.post_card_layout.view.locationIv
 import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
 import java.net.URL
@@ -85,8 +84,10 @@ class PostAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        var shiftedPosition = position
         val post = if ((position + 1) % 4 !=0) {
-            list[position - (position + 1) / 4]
+            shiftedPosition = position - (position + 1) / 4
+            list[shiftedPosition]
         } else {
             adsIterator.next()
         }
@@ -94,7 +95,7 @@ class PostAdapter(
         with(holder.itemView) {
             likeCb.isChecked = post.liked
             updateSocialCountView(post.likes, post.liked, likesCountTv)
-            likeCb.tag = position
+            likeCb.tag = shiftedPosition
             likeCb.setOnClickListener { view: View ->
                 val thisPost: Post = list[view.tag as Int]
                 if ((view as CheckBox).isChecked) {
@@ -109,7 +110,7 @@ class PostAdapter(
 
             commentCb.isChecked = post.commented
             updateSocialCountView(post.comments, post.commented, commentsCountTv)
-            commentCb.tag = position
+            commentCb.tag = shiftedPosition
             commentCb.setOnClickListener { view: View ->
                 val thisPost: Post = list[view.tag as Int]
                 if ((view as CheckBox).isChecked) {
@@ -125,14 +126,14 @@ class PostAdapter(
 
             shareCb.isChecked = post.shared
             updateSocialCountView(post.shares, post.shared, sharesCountTv)
-            shareCb.tag = position
+            shareCb.tag = shiftedPosition
             shareCb.setOnClickListener { view: View ->
                 val thisPost: Post = list[view.tag as Int]
                 if ((view as CheckBox).isChecked) {
                     thisPost.share(context)
                     asyncUpdateSocial(thisPost.id, "share", Mode.POST)
                     // temporarily reposting
-                    (context as MainActivity).fillPostBody(Repost(author = "Netology", source = thisPost.id))
+                    (context as MainActivity).fillNewPostBody(Repost(author = "Netology", source = thisPost.id))
                 } else {
                     shareCb.isChecked = post.shared // temporarily enabled
                     /* temporarily disabled
@@ -143,7 +144,7 @@ class PostAdapter(
                 updateSocialCountView(thisPost.shares, thisPost.shared, sharesCountTv)
             }
 
-            hideBtn.tag = position
+            hideBtn.tag = shiftedPosition
             hideBtn.setOnClickListener { view: View ->
                 val thisPost: Post = list[view.tag as Int]
                 list.remove(thisPost)
@@ -162,7 +163,7 @@ class PostAdapter(
                     R.color.colorSecondaryBackground
                 )
             )
-            socialGrp.visibility = View.VISIBLE
+            findViewById<Group>(R.id.socialGrp).visibility = View.VISIBLE
             adsTv.visibility = View.GONE
             locationGrp.visibility = View.GONE
             previewIv.visibility = View.GONE
@@ -199,8 +200,8 @@ class PostAdapter(
                     val repostView = LayoutInflater.from(context)
                         .inflate(R.layout.repost_layout, containerFl, false)
                     initPostView(repostView as ConstraintLayout, findSource(post))
-                    repostView.socialGrp.visibility = View.GONE
-                    repostView.adsTv.visibility = View.GONE //TODO
+                    repostView.findViewById<Group>(R.id.socialGrp).visibility = View.GONE
+                    repostView.adsTv.visibility = View.GONE
                     containerFl.addView(repostView)
                 }
                 is AdsPost -> {
@@ -211,7 +212,7 @@ class PostAdapter(
                         )
                     )
                     adsTv.visibility = View.VISIBLE
-                    socialGrp.visibility = View.GONE
+                    findViewById<Group>(R.id.socialGrp).visibility = View.GONE
                     contentTv.setOnClickListener {
                         post.open(context)
                     }
@@ -226,7 +227,7 @@ class PostAdapter(
         }
     }
 
-    private fun findSource(post: Repost): Post {
+    fun findSource(post: Repost): Post {
         val sourcePost: Post = index.getValue(post.source!!)
         return if (sourcePost !is Repost) sourcePost else findSource(sourcePost)
     }
@@ -245,7 +246,7 @@ class PostAdapter(
         )
     }
 
-    private fun asyncUpdatePreview(post: Post, imageView : ImageView) = launch {
+    fun asyncUpdatePreview(post: Post, imageView : ImageView) = launch {
         var image: Bitmap? = null
 
         withContext(Dispatchers.IO) {

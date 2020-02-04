@@ -236,7 +236,7 @@
         android:id="@+id/headerGrp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="authorTv,avatarIv,adsTv,createdTv"
+        app:constraint_referenced_ids="authorTv,avatarIv,createdTv"
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="16dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
