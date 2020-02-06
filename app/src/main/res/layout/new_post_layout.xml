@@ -12,27 +12,14 @@
         android:id="@+id/newContentTv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:background="@drawable/rounded_field"
         android:hint="@string/new_post_hint"
         android:inputType="textMultiLine"
         android:padding="8dp"
         android:textColor="@color/colorPrimaryText"
-        app:layout_constraintEnd_toStartOf="@+id/sendBtn"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/sendBtn"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        app:layout_constraintBottom_toBottomOf="@+id/newContentTv"
-        app:layout_constraintDimensionRatio="1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/newContentTv"
-        app:srcCompat="@drawable/ic_send" />
 
     <FrameLayout
         android:id="@+id/newContainerFl"
@@ -75,6 +62,7 @@
         android:id="@+id/newLocationIv"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="@+id/newAddressTv"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/newAddressTv"
@@ -85,7 +73,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="16dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="@color/colorPrimaryText"
@@ -93,6 +80,41 @@
         app:layout_constraintStart_toEndOf="@+id/newLocationIv"
         app:layout_constraintTop_toBottomOf="@id/newPreviewIv"
         tools:text="St. Petersburg, Nekrasova str., 13" />
+
+    <ImageView
+        android:id="@+id/sendBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/rounded_fill_block"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintHorizontal_weight="2"
+        app:layout_constraintStart_toEndOf="@+id/cancelBtn"
+        app:layout_constraintTop_toBottomOf="@+id/newAddressTv"
+        app:srcCompat="@drawable/ic_send" />
+
+    <ImageView
+        android:id="@+id/cancelBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/rounded_fill_block"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/sendBtn"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/newAddressTv"
+        app:srcCompat="@drawable/ic_cancel" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/newLocationGrp"

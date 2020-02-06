@@ -44,17 +44,28 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun prepareNewPostBody() {
         with(newPostLayout) {
-            newLocationGrp.visibility = View.GONE
-            newPreviewIv.visibility = View.GONE
-            newPlayBtn.visibility = View.GONE
-            newContainerFl.visibility = View.GONE
-            newContainerFl.removeAllViews()
+            clearNewPostBody()
             sendBtn.setOnClickListener {
-                val newPost = TextPost(author = "Netology", content = newContentTv.text.toString())
-                postAdapter.savePost(newPost)
-                newContentTv.text.clear()
+                val content = newContentTv.text.toString()
+                if (content.isNotEmpty() && content.isNotBlank()) {
+                    val newPost = TextPost(author = "Netology", content = content)
+                    postAdapter.savePost(newPost)
+                    clearNewPostBody()
+                }
+            }
+            cancelBtn.setOnClickListener {
+                clearNewPostBody()
             }
         }
+    }
+
+    private fun clearNewPostBody() {
+        newContentTv.text.clear()
+        newLocationGrp.visibility = View.GONE
+        newPreviewIv.visibility = View.GONE
+        newPlayBtn.visibility = View.GONE
+        newContainerFl.visibility = View.GONE
+        newContainerFl.removeAllViews()
     }
 
     private fun fetchData() = launch {
@@ -132,9 +143,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 else -> {} // ignored
             }
             sendBtn.setOnClickListener {
-                post.content = newContentTv.text.toString()
+                val content = newContentTv.text.toString()
+                if (content.isNotEmpty() && content.isNotBlank()) {
+                    post.content = content
+                } else {
+                    post.content = getString(R.string.repost_text_default)
+                }
                 postAdapter.savePost(post)
-                newContentTv.text.clear()
                 prepareNewPostBody()
             }
         }
