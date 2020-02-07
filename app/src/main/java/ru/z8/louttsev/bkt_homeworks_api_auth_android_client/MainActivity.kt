@@ -68,6 +68,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         newPlayBtn.visibility = View.GONE
         newContainerFl.visibility = View.GONE
         newContainerFl.removeAllViews()
+        typeGrp.visibility = View.VISIBLE
+        textBtn.isChecked = true
     }
 
     private fun fetchData() = launch {
@@ -109,6 +111,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     fun fillNewPostBody(post: Post, view: CheckBox?, countView: TextView?) {
         with(newPostLayout) {
             this.setBackground(getDrawable(R.drawable.rounded_block))
+            typeGrp.visibility = View.GONE
             when (post) {
                 is EventPost -> {
                     newLocationGrp.visibility = View.VISIBLE
