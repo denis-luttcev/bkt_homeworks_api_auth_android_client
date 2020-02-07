@@ -18,27 +18,28 @@ class EventPost(
     shares : Int = 0,
     views : Int = 0,
     var address : String = "",
-    var location : Location? = null
+    var location : Location = Location()
 ) : Post(id, Type.EVENT, author, content, created, liked, likes, commented, comments, shared, shares, views)
 {
     class RequestDto(model: EventPost) : Post.RequestDto(model) {
         val address: String = model.address
-        val location: Location? = model.location
+        val location: Location = model.location
     }
 
     override fun toDto() = RequestDto(this)
 
     override fun complete(): String = address
     override fun open(context : Context) {
-        val (latitude, longitude) = location!!
+        val (latitude, longitude) = location
+        val query = "geo:$latitude,$longitude?q=$address"
         context.startActivity(Intent().apply {
             action = Intent.ACTION_VIEW
-            data = Uri.parse("geo:$latitude,$longitude")
+            data = Uri.parse(query)
         })
     }
 
     data class Location(
-        val latitude : Double,
-        val longitude : Double
+        val latitude : Double = 0.0,
+        val longitude : Double = 0.0
     )
 }
