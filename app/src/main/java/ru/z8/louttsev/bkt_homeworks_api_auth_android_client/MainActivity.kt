@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.CheckBox
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
@@ -104,7 +106,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         indeterminateBar.visibility = View.GONE
     }
 
-    fun fillNewPostBody(post: Post) {
+    fun fillNewPostBody(post: Post, view: CheckBox?, countView: TextView?) {
         with(newPostLayout) {
             this.setBackground(getDrawable(R.drawable.rounded_block))
             when (post) {
@@ -151,6 +153,16 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 }
                 postAdapter.savePost(post)
                 prepareNewPostBody()
+            }
+            cancelBtn.setOnClickListener {
+                if (post is Repost) {
+                    val sharedPost = postAdapter.getPostById(post.source!!)
+                    sharedPost!!.removeShare()
+                    postAdapter.asyncUpdateSocial(post.source!!, "share", Mode.DELETE)
+                    view!!.isChecked = false
+                    postAdapter.updateSocialCountView(sharedPost.shares, false, countView!!)
+                }
+                clearNewPostBody()
             }
         }
     }

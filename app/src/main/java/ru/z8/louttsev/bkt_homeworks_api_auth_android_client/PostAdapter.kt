@@ -133,7 +133,12 @@ class PostAdapter(
                     thisPost.share(context)
                     asyncUpdateSocial(thisPost.id, "share", Mode.POST)
                     // temporarily reposting
-                    (context as MainActivity).fillNewPostBody(Repost(author = "Netology", source = thisPost.id))
+                    (context as MainActivity)
+                        .fillNewPostBody(
+                            Repost(author = "Netology", source = thisPost.id),
+                            view,
+                            sharesCountTv
+                        )
                 } else {
                     shareCb.isChecked = post.shared // temporarily enabled
                     /* temporarily disabled
@@ -232,7 +237,9 @@ class PostAdapter(
         return if (sourcePost !is Repost) sourcePost else findSource(sourcePost)
     }
 
-    private fun View.updateSocialCountView(
+    fun getPostById(id: UUID) = index.get(id)
+
+    fun updateSocialCountView(
         count: Int,
         isSelected: Boolean,
         textView: TextView
@@ -240,7 +247,7 @@ class PostAdapter(
         textView.text = if (count > 0) count.toString() else ""
         textView.setTextColor(
             ContextCompat.getColor(
-                context,
+                textView.context,
                 if (isSelected) R.color.colorSelected else R.color.colorSecondaryText
             )
         )
@@ -270,7 +277,7 @@ class PostAdapter(
         imageView.setImageBitmap(image)
     }
 
-    private fun asyncUpdateSocial(id: UUID, attribute: String, mode: Mode) = launch {
+    fun asyncUpdateSocial(id: UUID, attribute: String, mode: Mode) = launch {
         withContext(Dispatchers.IO) {
             val client = HttpClient()
             val url =
