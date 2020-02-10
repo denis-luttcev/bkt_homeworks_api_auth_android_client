@@ -2,7 +2,6 @@ package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CheckBox
@@ -78,6 +77,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         newContentTv.text.clear()
         newLocationGrp.visibility = View.GONE
         newPreviewIv.visibility = View.GONE
+        newGalleryBtn.visibility = View.GONE
+        newCameraBtn.visibility = View.GONE
         newPlayBtn.visibility = View.GONE
         newContainerFl.visibility = View.GONE
         newContainerFl.removeAllViews()
@@ -88,13 +89,22 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun prepareNewImagePostBody() {
         clearNewPostBody()
         newPreviewIv.visibility = View.VISIBLE
+        newGalleryBtn.visibility = View.VISIBLE
+        newGalleryBtn.setOnClickListener {
+            //TODO: implement load new image from gallery
+            //TODO: implement update image preview
+        }
+        newCameraBtn.visibility = View.VISIBLE
+        newCameraBtn.setOnClickListener {
+            //TODO: implement make new image by camera
+            //TODO: implement update image preview
+        }
         sendBtn.setOnClickListener {
             val content = newContentTv.text.toString()
-            //TODO: implement load new image
-            //TODO: implement upload and preview image
+            //TODO: implement upload image
             if (content.isNotEmpty() && content.isNotBlank()) {
                 val newPost = ImagePost(author = "Netology", content = content)
-                //TODO: implement add image ur to post
+                //TODO: implement add image url to post
                 postAdapter.savePost(newPost)
                 prepareNewTextPostBody()
             }
@@ -123,10 +133,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         clearNewPostBody()
         newPreviewIv.visibility = View.VISIBLE
         newPlayBtn.visibility = View.VISIBLE
+        //TODO: add video url EditText
         sendBtn.setOnClickListener {
             val content = newContentTv.text.toString()
-            //TODO: implement parse video url
-            //TODO: implement load video preview
+            //TODO: implement get and parse video url
+            //TODO: implement update video preview
             if (content.isNotEmpty() && content.isNotBlank()) {
                 val newPost = VideoPost(author = "Netology", content = content)
                 //TODO: implement add video ur to post
