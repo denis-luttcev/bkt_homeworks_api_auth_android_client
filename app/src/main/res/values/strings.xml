@@ -3,5 +3,6 @@
     <string name="hide">Hide it</string>
     <string name="ads">Ads post</string>
     <string name="new_post_hint">Write something</string>
+    <string name="event_address_hint">Enter address here</string>
     <string name="repost_text_default">Reposted</string>
 </resources>

@@ -106,19 +106,22 @@
         android:id="@+id/newLocationIv"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="@+id/newAddressTv"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/newAddressTv"
         app:srcCompat="@drawable/ic_location" />
 
-    <TextView
+    <EditText
         android:id="@+id/newAddressTv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rounded_field"
         android:ellipsize="end"
+        android:hint="@string/event_address_hint"
         android:maxLines="1"
+        android:padding="8dp"
         android:textColor="@color/colorPrimaryText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/newLocationIv"

@@ -2,13 +2,13 @@ package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.GsonSerializer
@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         fetchData()
 
-        prepareNewPostBody()
+        prepareNewTextPostBody()
 
         swipeContainer.setOnRefreshListener {
             postAdapter.updateData()
@@ -44,9 +44,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun prepareNewPostBody() {
+    private fun prepareNewTextPostBody() {
         with(newPostLayout) {
             clearNewPostBody()
+            textBtn.isChecked = true
             sendBtn.setOnClickListener {
                 val content = newContentTv.text.toString()
                 if (content.isNotEmpty() && content.isNotBlank()) {
@@ -57,6 +58,18 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
             cancelBtn.setOnClickListener {
                 clearNewPostBody()
+            }
+            textBtn.setOnClickListener {
+                clearNewPostBody()
+            }
+            imageBtn.setOnClickListener {
+                prepareNewImagePostBody()
+            }
+            eventBtn.setOnClickListener {
+                prepareNewEventPostBody()
+            }
+            videoBtn.setOnClickListener {
+                prepareNewVideoPostBody()
             }
         }
     }
@@ -69,7 +82,58 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         newContainerFl.visibility = View.GONE
         newContainerFl.removeAllViews()
         typeGrp.visibility = View.VISIBLE
-        textBtn.isChecked = true
+        newAddressTv.text.clear()
+    }
+
+    private fun prepareNewImagePostBody() {
+        clearNewPostBody()
+        newPreviewIv.visibility = View.VISIBLE
+        sendBtn.setOnClickListener {
+            val content = newContentTv.text.toString()
+            //TODO: implement load new image
+            //TODO: implement upload and preview image
+            if (content.isNotEmpty() && content.isNotBlank()) {
+                val newPost = ImagePost(author = "Netology", content = content)
+                //TODO: implement add image ur to post
+                postAdapter.savePost(newPost)
+                prepareNewTextPostBody()
+            }
+        }
+    }
+
+    private fun prepareNewEventPostBody() {
+        clearNewPostBody()
+        newLocationGrp.visibility = View.VISIBLE
+        sendBtn.setOnClickListener {
+            val content = newContentTv.text.toString()
+            val address = newAddressTv.text.toString()
+            if (content.isNotEmpty()
+                && content.isNotBlank()
+                && address.isNotEmpty()
+                && address.isNotBlank()
+            ) {
+                val newPost = EventPost(author = "Netology", content = content, address = address)
+                postAdapter.savePost(newPost)
+                prepareNewTextPostBody()
+            }
+        }
+    }
+
+    private fun prepareNewVideoPostBody() {
+        clearNewPostBody()
+        newPreviewIv.visibility = View.VISIBLE
+        newPlayBtn.visibility = View.VISIBLE
+        sendBtn.setOnClickListener {
+            val content = newContentTv.text.toString()
+            //TODO: implement parse video url
+            //TODO: implement load video preview
+            if (content.isNotEmpty() && content.isNotBlank()) {
+                val newPost = VideoPost(author = "Netology", content = content)
+                //TODO: implement add video ur to post
+                postAdapter.savePost(newPost)
+                prepareNewTextPostBody()
+            }
+        }
     }
 
     private fun fetchData() = launch {
@@ -115,7 +179,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             when (post) {
                 is EventPost -> {
                     newLocationGrp.visibility = View.VISIBLE
-                    newAddressTv.text = post.address
+                    newAddressTv.setText(post.address)
                     newAddressTv.setOnClickListener {
                         post.open(context)
                     }
@@ -155,7 +219,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     post.content = getString(R.string.repost_text_default)
                 }
                 postAdapter.savePost(post)
-                prepareNewPostBody()
+                prepareNewTextPostBody()
             }
             cancelBtn.setOnClickListener {
                 if (post is Repost) {
@@ -165,7 +229,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     view!!.isChecked = false
                     postAdapter.updateSocialCountView(sharedPost.shares, false, countView!!)
                 }
-                clearNewPostBody()
+                prepareNewTextPostBody()
             }
         }
     }
