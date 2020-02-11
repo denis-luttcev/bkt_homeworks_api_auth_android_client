@@ -1,7 +1,11 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CheckBox
@@ -24,9 +28,11 @@ import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
 
 const val postsUrl = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts"
 const val adsUrl = "https://api-auth-server-luttcev.herokuapp.com/api/v1/ads"
+const val GALLERY_REQUEST = 100
 
 @KtorExperimentalAPI
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
+
     private lateinit var postAdapter : PostAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,6 +63,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
             cancelBtn.setOnClickListener {
                 clearNewPostBody()
+                textBtn.isChecked = true
             }
             textBtn.setOnClickListener {
                 clearNewPostBody()
@@ -76,6 +83,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun clearNewPostBody() {
         newContentTv.text.clear()
         newLocationGrp.visibility = View.GONE
+        newPreviewIv.setImageURI(null)
         newPreviewIv.visibility = View.GONE
         newGalleryBtn.visibility = View.GONE
         newCameraBtn.visibility = View.GONE
@@ -91,8 +99,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         newPreviewIv.visibility = View.VISIBLE
         newGalleryBtn.visibility = View.VISIBLE
         newGalleryBtn.setOnClickListener {
-            //TODO: implement load new image from gallery
-            //TODO: implement update image preview
+            startActivityForResult(Intent().apply {
+                action = Intent.ACTION_GET_CONTENT
+                type = "image/*"
+            }, GALLERY_REQUEST)
         }
         newCameraBtn.visibility = View.VISIBLE
         newCameraBtn.setOnClickListener {
@@ -108,6 +118,19 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 postAdapter.savePost(newPost)
                 prepareNewTextPostBody()
             }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            GALLERY_REQUEST -> {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    newPreviewIv.setImageURI(data.data)
+                    newGalleryBtn.visibility = View.GONE
+                    newCameraBtn.visibility = View.GONE
+                }
+            }
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 

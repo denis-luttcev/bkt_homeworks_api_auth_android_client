@@ -18,8 +18,6 @@ class ImagePost(
     var imageUrl : String = ""
 ) : Post(id, Type.IMAGE, author, content, created, liked, likes, commented, comments, shared, shares, views)
 {
-    //fun getImageUrl() = imageUrl
-
     class RequestDto(model: ImagePost) : Post.RequestDto(model) {
         val imageUrl: String = model.imageUrl
     }
