@@ -329,7 +329,7 @@ class PostAdapter(
                 contentTypes.get(extension)!!
                 else ContentType.Image.Any
 
-            val response: Any = client.post {
+            val media = client.post<Media> {
                 url("https://api-auth-server-luttcev.herokuapp.com/api/v1/media")
                 //contentType(ContentType.MultiPart.FormData)
                 body = MultiPartFormDataContent(
@@ -352,7 +352,6 @@ class PostAdapter(
                 )
             }
             client.close()
-            val media: Media = response as Media
             return@withContext media.imageUrl
         }
     }

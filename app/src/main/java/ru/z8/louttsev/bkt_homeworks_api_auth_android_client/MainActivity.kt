@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.CheckBox
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -57,7 +58,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     val newPost = TextPost(author = "Netology", content = content)
                     postAdapter.savePost(newPost)
                     clearNewPostBody()
-                }
+                } else
+                    Toast.makeText(this@MainActivity,
+                            R.string.new_post_hint,
+                            Toast.LENGTH_SHORT
+                        ).show()
             }
             cancelBtn.setOnClickListener {
                 clearNewPostBody()
@@ -119,7 +124,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 )
                 postAdapter.savePost(newPost)
                 prepareNewTextPostBody()
-            }
+            } else
+                Toast.makeText(this@MainActivity,
+                    R.string.new_post_hint,
+                    Toast.LENGTH_SHORT
+                ).show()
         }
     }
 
@@ -153,7 +162,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 val newPost = EventPost(author = "Netology", content = content, address = address)
                 postAdapter.savePost(newPost)
                 prepareNewTextPostBody()
-            }
+            } else
+                Toast.makeText(this@MainActivity,
+                    R.string.new_post_hint,
+                    Toast.LENGTH_SHORT
+                ).show()
         }
     }
 
@@ -171,7 +184,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 //TODO: implement add video ur to post
                 postAdapter.savePost(newPost)
                 prepareNewTextPostBody()
-            }
+            } else
+                Toast.makeText(this@MainActivity,
+                    R.string.new_post_hint,
+                    Toast.LENGTH_SHORT
+                ).show()
         }
     }
 
