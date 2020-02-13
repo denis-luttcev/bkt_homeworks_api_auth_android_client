@@ -2,10 +2,8 @@ package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CheckBox
@@ -84,6 +82,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         newContentTv.text.clear()
         newLocationGrp.visibility = View.GONE
         newPreviewIv.setImageURI(null)
+        newPreviewIv.tag = null
         newPreviewIv.visibility = View.GONE
         newGalleryBtn.visibility = View.GONE
         newCameraBtn.visibility = View.GONE
@@ -111,10 +110,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
         sendBtn.setOnClickListener {
             val content = newContentTv.text.toString()
-            //TODO: implement upload image
-            if (content.isNotEmpty() && content.isNotBlank()) {
-                val newPost = ImagePost(author = "Netology", content = content)
-                //TODO: implement add image url to post
+            val imageUrl = newPreviewIv.tag.toString()
+            if (content.isNotEmpty() && content.isNotBlank() && imageUrl.isNotEmpty()) {
+                val newPost = ImagePost(
+                    author = "Netology",
+                    content = content,
+                    imageUrl = imageUrl
+                )
                 postAdapter.savePost(newPost)
                 prepareNewTextPostBody()
             }
@@ -125,11 +127,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         when (requestCode) {
             GALLERY_REQUEST -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    newPreviewIv.setImageURI(data.data)
+                    val imageUri = data.data!!
+                    newPreviewIv.setImageURI(imageUri)
                     newGalleryBtn.visibility = View.GONE
                     newCameraBtn.visibility = View.GONE
+                    postAdapter.saveMedia(imageUri, newPreviewIv)
                 }
             }
+            //TODO: implement camera image handle
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }

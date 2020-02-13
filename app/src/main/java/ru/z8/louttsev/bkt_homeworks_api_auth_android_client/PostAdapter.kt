@@ -1,7 +1,10 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.provider.OpenableColumns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,12 +20,12 @@ import io.ktor.client.HttpClient
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.delete
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.url
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
-import io.ktor.http.withCharset
+import io.ktor.http.*
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.post_card_layout.view.*
 import kotlinx.android.synthetic.main.post_card_layout.view.hideBtn
@@ -39,8 +42,9 @@ import kotlinx.android.synthetic.main.post_card_layout.view.addressTv
 import kotlinx.android.synthetic.main.post_card_layout.view.locationIv
 import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
+import java.io.File
 import java.net.URL
-import java.util.UUID
+import java.util.*
 
 fun List<AdsPost>.circularIterator() : CircularIterator {
     return CircularIterator(this)
@@ -287,6 +291,69 @@ class PostAdapter(
                 Mode.DELETE -> client.delete<String>(url)
             }
             client.close()
+        }
+    }
+
+    fun saveMedia(uri: Uri, newPreviewIv: ImageView) = launch(Dispatchers.Main) {
+        val context = newPreviewIv.context
+        newPreviewIv.tag = withContext(Dispatchers.IO) {
+            val client = HttpClient {
+                install(JsonFeature) {
+                    acceptContentTypes = listOf(
+                        ContentType.Application.Json
+                    )
+                }
+            }
+
+            val filename = try {
+                context.contentResolver.query(
+                    uri,
+                    null,
+                    null,
+                    null,
+                    null
+                )?.let { cursor ->
+                    cursor.run {
+                        if (moveToFirst()) getString(getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                        else null
+                    }.also { cursor.close() }
+                }
+            } catch (e : Exception) { null }
+            val extension = filename!!.split(".")[1].toLowerCase(Locale.getDefault())
+            val contentTypes = mapOf(
+                "jpeg" to ContentType.Image.JPEG,
+                "jpg" to ContentType.Image.JPEG,
+                "png" to ContentType.Image.PNG
+            )
+            val contentType = if (contentTypes.containsKey(extension))
+                contentTypes.get(extension)!!
+                else ContentType.Image.Any
+
+            val response: Any = client.post {
+                url("https://api-auth-server-luttcev.herokuapp.com/api/v1/media")
+                //contentType(ContentType.MultiPart.FormData)
+                body = MultiPartFormDataContent(
+                    formData {
+                        append(
+                            key = "file",
+                            value = context.contentResolver.openInputStream(uri)!!.readBytes(),
+                            headers = Headers.build {
+                                append(HttpHeaders.ContentType, contentType)
+                                append(
+                                    HttpHeaders.ContentDisposition,
+                                    ContentDisposition.File
+                                        .withParameter(ContentDisposition.Parameters.Name, "file")
+                                        .withParameter(ContentDisposition.Parameters.FileName, filename)
+                                        .toString()
+                                )
+                            }
+                        )
+                    }
+                )
+            }
+            client.close()
+            val media: Media = response as Media
+            return@withContext media.imageUrl
         }
     }
 
