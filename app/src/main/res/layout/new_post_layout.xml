@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_margin="8dp"
     android:background="@color/colorSecondaryBackground"
     android:padding="16dp">
@@ -103,6 +103,22 @@
         app:layout_constraintTop_toTopOf="@id/newPreviewIv"
         app:srcCompat="@drawable/ic_play" />
 
+    <EditText
+        android:id="@+id/newVideoUrlEt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rounded_field"
+        android:ellipsize="end"
+        android:hint="@string/video_url_hint"
+        android:inputType="textMultiLine"
+        android:padding="8dp"
+        android:textColor="@color/colorPrimaryText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/newPreviewIv" />
+
     <ImageButton
         android:id="@+id/newGalleryBtn"
         android:layout_width="wrap_content"
@@ -135,13 +151,13 @@
         android:id="@+id/newLocationIv"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="@+id/newAddressTv"
+        app:layout_constraintBottom_toBottomOf="@+id/newAddressEt"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/newAddressTv"
+        app:layout_constraintTop_toTopOf="@+id/newAddressEt"
         app:srcCompat="@drawable/ic_location" />
 
     <EditText
-        android:id="@+id/newAddressTv"
+        android:id="@+id/newAddressEt"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
@@ -149,12 +165,12 @@
         android:background="@drawable/rounded_field"
         android:ellipsize="end"
         android:hint="@string/event_address_hint"
-        android:maxLines="1"
+        android:inputType="textMultiLine"
         android:padding="8dp"
         android:textColor="@color/colorPrimaryText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/newLocationIv"
-        app:layout_constraintTop_toBottomOf="@id/newPreviewIv"
+        app:layout_constraintTop_toBottomOf="@id/newVideoUrlEt"
         tools:text="St. Petersburg, Nekrasova str., 13" />
 
     <ImageView
@@ -172,7 +188,7 @@
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintHorizontal_weight="2"
         app:layout_constraintStart_toEndOf="@+id/cancelBtn"
-        app:layout_constraintTop_toBottomOf="@+id/newAddressTv"
+        app:layout_constraintTop_toBottomOf="@+id/newAddressEt"
         app:srcCompat="@drawable/ic_send" />
 
     <ImageView
@@ -189,7 +205,7 @@
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/newAddressTv"
+        app:layout_constraintTop_toBottomOf="@+id/newAddressEt"
         app:srcCompat="@drawable/ic_cancel" />
 
     <androidx.constraintlayout.widget.Group
@@ -197,7 +213,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:constraint_referenced_ids="newLocationIv,newAddressTv"
+        app:constraint_referenced_ids="newLocationIv,newAddressEt"
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="16dp" />
 

@@ -1,6 +1,5 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -42,7 +41,6 @@ import kotlinx.android.synthetic.main.post_card_layout.view.addressTv
 import kotlinx.android.synthetic.main.post_card_layout.view.locationIv
 import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
-import java.io.File
 import java.net.URL
 import java.util.*
 
@@ -241,7 +239,7 @@ class PostAdapter(
         return if (sourcePost !is Repost) sourcePost else findSource(sourcePost)
     }
 
-    fun getPostById(id: UUID) = index.get(id)
+    fun getPostById(id: UUID) = index[id]
 
     fun updateSocialCountView(
         count: Int,
@@ -258,19 +256,23 @@ class PostAdapter(
     }
 
     fun asyncUpdatePreview(post: Post, imageView : ImageView) = launch {
+        val url = when(post) {
+            is ImagePost -> {
+                post.imageUrl
+            }
+            is VideoPost -> {
+                post.getImageUrl()
+            }
+            else -> { "" } // ignored
+        }
+        asyncUpdatePreview(url, imageView)
+    }
+
+    fun asyncUpdatePreview(url: String, imageView : ImageView) = launch {
         var image: Bitmap? = null
 
         withContext(Dispatchers.IO) {
             val client = HttpClient()
-            val url = when(post) {
-                is ImagePost -> {
-                    post.imageUrl
-                }
-                is VideoPost -> {
-                    post.getImageUrl()
-                }
-                else -> { "" } // ignored
-            }
             image = BitmapFactory
                 .decodeStream(
                     URL(url)
@@ -319,15 +321,12 @@ class PostAdapter(
                     }.also { cursor.close() }
                 }
             } catch (e : Exception) { null }
-            val extension = filename!!.split(".")[1].toLowerCase(Locale.getDefault())
-            val contentTypes = mapOf(
-                "jpeg" to ContentType.Image.JPEG,
-                "jpg" to ContentType.Image.JPEG,
-                "png" to ContentType.Image.PNG
-            )
-            val contentType = if (contentTypes.containsKey(extension))
-                contentTypes.get(extension)!!
-                else ContentType.Image.Any
+            val contentType = when(filename!!.split(".")[1].toLowerCase(Locale.getDefault())) {
+                "jpeg" -> ContentType.Image.JPEG
+                "jpg" -> ContentType.Image.JPEG
+                "png" -> ContentType.Image.PNG
+                else -> ContentType.Image.Any
+            }
 
             val media = client.post<Media> {
                 url("https://api-auth-server-luttcev.herokuapp.com/api/v1/media")

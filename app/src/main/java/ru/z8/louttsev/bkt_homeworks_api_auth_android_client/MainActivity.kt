@@ -24,6 +24,7 @@ import kotlinx.android.synthetic.main.new_post_layout.view.*
 import kotlinx.android.synthetic.main.post_card_layout.view.*
 import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.parseVideoUrl
 
 const val postsUrl = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts"
 const val adsUrl = "https://api-auth-server-luttcev.herokuapp.com/api/v1/ads"
@@ -89,13 +90,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         newPreviewIv.setImageURI(null)
         newPreviewIv.tag = null
         newPreviewIv.visibility = View.GONE
+        newVideoUrlEt.text.clear()
+        newVideoUrlEt.visibility = View.GONE
         newGalleryBtn.visibility = View.GONE
         newCameraBtn.visibility = View.GONE
         newPlayBtn.visibility = View.GONE
         newContainerFl.visibility = View.GONE
         newContainerFl.removeAllViews()
         typeGrp.visibility = View.VISIBLE
-        newAddressTv.text.clear()
+        newAddressEt.text.clear()
     }
 
     private fun prepareNewImagePostBody() {
@@ -153,7 +156,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         newLocationGrp.visibility = View.VISIBLE
         sendBtn.setOnClickListener {
             val content = newContentTv.text.toString()
-            val address = newAddressTv.text.toString()
+            val address = newAddressEt.text.toString()
             if (content.isNotEmpty()
                 && content.isNotBlank()
                 && address.isNotEmpty()
@@ -172,16 +175,35 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun prepareNewVideoPostBody() {
         clearNewPostBody()
-        newPreviewIv.visibility = View.VISIBLE
-        newPlayBtn.visibility = View.VISIBLE
-        //TODO: add video url EditText
+        newVideoUrlEt.visibility = View.VISIBLE
+        newVideoUrlEt.setOnFocusChangeListener { _, focused ->
+            if (!focused) {
+                if (videoBtn.isChecked) {
+                    val inputUrl = newVideoUrlEt.text.toString()
+                    if (isYouTubeUrl(inputUrl)) {
+                        postAdapter.asyncUpdatePreview(parseVideoUrl(inputUrl), newPreviewIv)
+                        newPreviewIv.visibility = View.VISIBLE
+                        newPlayBtn.visibility = View.VISIBLE
+                        newVideoUrlEt.visibility = View.GONE
+                    } else {
+                        Toast.makeText(
+                            this@MainActivity,
+                            R.string.video_url_error_message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        newVideoUrlEt.text.clear()
+                    }
+                } else {
+                    newVideoUrlEt.text.clear()
+                    newVideoUrlEt.visibility = View.GONE
+                }
+            }
+        }
         sendBtn.setOnClickListener {
             val content = newContentTv.text.toString()
-            //TODO: implement get and parse video url
-            //TODO: implement update video preview
-            if (content.isNotEmpty() && content.isNotBlank()) {
-                val newPost = VideoPost(author = "Netology", content = content)
-                //TODO: implement add video ur to post
+            val inputUrl = newVideoUrlEt.text.toString()
+            if (content.isNotEmpty() && content.isNotBlank() && isYouTubeUrl(inputUrl)) {
+                val newPost = VideoPost(author = "Netology", content = content, videoUrl = inputUrl)
                 postAdapter.savePost(newPost)
                 prepareNewTextPostBody()
             } else
@@ -191,6 +213,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 ).show()
         }
     }
+
+    private fun isYouTubeUrl(inputUrl: String)
+            = inputUrl.contains("https://www.youtube.com/watch?v=")
 
     private fun fetchData() = launch {
         indeterminateBar.visibility = View.VISIBLE
@@ -235,8 +260,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             when (post) {
                 is EventPost -> {
                     newLocationGrp.visibility = View.VISIBLE
-                    newAddressTv.setText(post.address)
-                    newAddressTv.setOnClickListener {
+                    newAddressEt.setText(post.address)
+                    newAddressEt.setOnClickListener {
                         post.open(context)
                     }
                     newLocationIv.setOnClickListener {

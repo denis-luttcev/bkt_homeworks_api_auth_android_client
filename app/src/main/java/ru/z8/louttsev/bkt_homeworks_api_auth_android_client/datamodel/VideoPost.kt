@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import java.util.UUID
 
+fun parseVideoUrl(url : String) = "https://img.youtube.com/vi/${Regex("""v=""").split(url)[1]}/maxresdefault.jpg"
+
 class VideoPost(
     id : UUID = UUID.randomUUID(),
     author : String = "",
@@ -34,7 +36,5 @@ class VideoPost(
         })
     }
 
-    private fun parseVideoUrl(url : String) = Regex("""v=""").split(url)[1]
-
-    fun getImageUrl() = "https://img.youtube.com/vi/${parseVideoUrl(videoUrl)}/maxresdefault.jpg"
+    fun getImageUrl() = parseVideoUrl(videoUrl)
 }
