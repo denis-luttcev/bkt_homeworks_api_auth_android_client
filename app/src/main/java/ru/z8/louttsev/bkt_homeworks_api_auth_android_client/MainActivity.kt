@@ -12,98 +12,134 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
 import androidx.recyclerview.widget.LinearLayoutManager
-import io.ktor.client.HttpClient
-import io.ktor.client.features.json.GsonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.request.get
-import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.new_post_layout.*
 import kotlinx.android.synthetic.main.new_post_layout.view.*
 import kotlinx.android.synthetic.main.post_card_layout.view.*
-import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.parseVideoUrl
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI.*
 
-const val postsUrl = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts"
-const val adsUrl = "https://api-auth-server-luttcev.herokuapp.com/api/v1/ads"
-const val GALLERY_REQUEST = 100
+private const val GALLERY_REQUEST = 100
 
 @KtorExperimentalAPI
-class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
-
-    private lateinit var postAdapter : PostAdapter
-
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        fetchData()
+        postListing.layoutManager = LinearLayoutManager(this)
+        postListing.adapter = postAdapter
 
-        prepareNewTextPostBody()
+        swipeContainer.isRefreshing = true
+        networkService.fetchAdapterData { posts: List<Post>, ads: List<AdsPost> ->
+            postAdapter.addPosts(posts)
+            postAdapter.addAds(ads)
+
+            postAdapter.notifyDataSetChanged()
+
+            swipeContainer.isRefreshing = false
+        }
 
         swipeContainer.setOnRefreshListener {
-            postAdapter.updateData()
+            networkService.updateAds(postAdapter.getAdsCount()) {
+                postAdapter.addAds(it)
+            }
+
+            updatePostsInAdapter()
+        }
+
+        prepareNewTextPostBody()
+    }
+
+    private fun updatePostsInAdapter() {
+        swipeContainer.isRefreshing = true
+        networkService.updatePosts(postAdapter.getPostsCount()) {
+            postAdapter.addPosts(it)
+            postAdapter.notifyDataSetChanged()
+
+            postListing.smoothScrollToPosition(0)
+
             swipeContainer.isRefreshing = false
         }
     }
 
     private fun prepareNewTextPostBody() {
-        with(newPostLayout) {
+        clearNewPostBody()
+
+        textBtn.isChecked = true
+
+        sendBtn.setOnClickListener {
+            val content = newContentTv.text.toString()
+            if (content.isEmpty() || content.isBlank()) {
+                Toast.makeText(
+                    this,
+                    R.string.new_post_hint,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            val post = TextPost(author = "Netology", content = content)
+
+            networkService.savePost(post, ::updatePostsInAdapter)
+
+            clearNewPostBody()
+        }
+
+        cancelBtn.setOnClickListener {
             clearNewPostBody()
             textBtn.isChecked = true
-            sendBtn.setOnClickListener {
-                val content = newContentTv.text.toString()
-                if (content.isNotEmpty() && content.isNotBlank()) {
-                    val newPost = TextPost(author = "Netology", content = content)
-                    postAdapter.savePost(newPost)
-                    clearNewPostBody()
-                } else
-                    Toast.makeText(this@MainActivity,
-                            R.string.new_post_hint,
-                            Toast.LENGTH_SHORT
-                        ).show()
-            }
-            cancelBtn.setOnClickListener {
-                clearNewPostBody()
-                textBtn.isChecked = true
-            }
-            textBtn.setOnClickListener {
-                clearNewPostBody()
-            }
-            imageBtn.setOnClickListener {
-                prepareNewImagePostBody()
-            }
-            eventBtn.setOnClickListener {
-                prepareNewEventPostBody()
-            }
-            videoBtn.setOnClickListener {
-                prepareNewVideoPostBody()
-            }
+        }
+
+        textBtn.setOnClickListener {
+            clearNewPostBody()
+        }
+
+        imageBtn.setOnClickListener {
+            prepareNewImagePostBody()
+        }
+
+        eventBtn.setOnClickListener {
+            prepareNewEventPostBody()
+        }
+
+        videoBtn.setOnClickListener {
+            prepareNewVideoPostBody()
         }
     }
 
     private fun clearNewPostBody() {
         newContentTv.text.clear()
+
         newLocationGrp.visibility = View.GONE
+
         newPreviewIv.setImageURI(null)
         newPreviewIv.tag = null
         newPreviewIv.visibility = View.GONE
+
         newVideoUrlEt.text.clear()
         newVideoUrlEt.visibility = View.GONE
+
         newGalleryBtn.visibility = View.GONE
         newCameraBtn.visibility = View.GONE
+
         newPlayBtn.visibility = View.GONE
+
         newContainerFl.visibility = View.GONE
         newContainerFl.removeAllViews()
+
         typeGrp.visibility = View.VISIBLE
+
         newAddressEt.text.clear()
     }
 
     private fun prepareNewImagePostBody() {
         clearNewPostBody()
+
         newPreviewIv.visibility = View.VISIBLE
+
         newGalleryBtn.visibility = View.VISIBLE
         newGalleryBtn.setOnClickListener {
             startActivityForResult(Intent().apply {
@@ -111,27 +147,37 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 type = "image/*"
             }, GALLERY_REQUEST)
         }
+
         newCameraBtn.visibility = View.VISIBLE
         newCameraBtn.setOnClickListener {
             //TODO: implement make new image by camera
             //TODO: implement update image preview
         }
+
         sendBtn.setOnClickListener {
             val content = newContentTv.text.toString()
-            val imageUrl = newPreviewIv.tag.toString()
-            if (content.isNotEmpty() && content.isNotBlank() && imageUrl.isNotEmpty()) {
-                val newPost = ImagePost(
-                    author = "Netology",
-                    content = content,
-                    imageUrl = imageUrl
-                )
-                postAdapter.savePost(newPost)
-                prepareNewTextPostBody()
-            } else
-                Toast.makeText(this@MainActivity,
+            if (content.isEmpty() || content.isBlank()) {
+                Toast.makeText(this,
                     R.string.new_post_hint,
                     Toast.LENGTH_SHORT
                 ).show()
+                return@setOnClickListener
+            }
+
+            val imageUrl = newPreviewIv.tag.toString()
+            if (imageUrl.isEmpty() || imageUrl.isBlank()) {
+                Toast.makeText(this,
+                    R.string.image_uri_error_message,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            val post = ImagePost(author = "Netology", content = content, imageUrl = imageUrl)
+
+            networkService.savePost(post, ::updatePostsInAdapter)
+
+            prepareNewTextPostBody()
         }
     }
 
@@ -140,10 +186,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             GALLERY_REQUEST -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     val imageUri = data.data!!
+
                     newPreviewIv.setImageURI(imageUri)
+
                     newGalleryBtn.visibility = View.GONE
                     newCameraBtn.visibility = View.GONE
-                    postAdapter.saveMedia(imageUri, newPreviewIv)
+
+                    networkService.saveMedia(imageUri, this) {
+                        newPreviewIv.tag = it
+                    }
                 }
             }
             //TODO: implement camera image handle
@@ -153,111 +204,112 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun prepareNewEventPostBody() {
         clearNewPostBody()
+
         newLocationGrp.visibility = View.VISIBLE
+
         sendBtn.setOnClickListener {
             val content = newContentTv.text.toString()
-            val address = newAddressEt.text.toString()
-            if (content.isNotEmpty()
-                && content.isNotBlank()
-                && address.isNotEmpty()
-                && address.isNotBlank()
-            ) {
-                val newPost = EventPost(author = "Netology", content = content, address = address)
-                postAdapter.savePost(newPost)
-                prepareNewTextPostBody()
-            } else
-                Toast.makeText(this@MainActivity,
+            if (content.isEmpty() || content.isBlank()) {
+                Toast.makeText(
+                    this,
                     R.string.new_post_hint,
                     Toast.LENGTH_SHORT
                 ).show()
+                return@setOnClickListener
+            }
+
+            val address = newAddressEt.text.toString()
+            if (address.isEmpty() || address.isBlank()) {
+                Toast.makeText(this,
+                    R.string.event_address_error_message,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            val post = EventPost(author = "Netology", content = content, address = address)
+
+            networkService.savePost(post, ::updatePostsInAdapter)
+
+            prepareNewTextPostBody()
         }
     }
 
     private fun prepareNewVideoPostBody() {
         clearNewPostBody()
+
         newVideoUrlEt.visibility = View.VISIBLE
         newVideoUrlEt.setOnFocusChangeListener { _, focused ->
             if (!focused) {
                 if (videoBtn.isChecked) {
+
                     val inputUrl = newVideoUrlEt.text.toString()
-                    if (isYouTubeUrl(inputUrl)) {
-                        postAdapter.asyncUpdatePreview(parseVideoUrl(inputUrl), newPreviewIv)
-                        newPreviewIv.visibility = View.VISIBLE
-                        newPlayBtn.visibility = View.VISIBLE
-                        newVideoUrlEt.visibility = View.GONE
-                    } else {
+                    if (isNotYouTubeUrl(inputUrl)) {
                         Toast.makeText(
-                            this@MainActivity,
+                            this,
                             R.string.video_url_error_message,
                             Toast.LENGTH_SHORT
                         ).show()
                         newVideoUrlEt.text.clear()
+                        return@setOnFocusChangeListener
                     }
+
+                    networkService.loadMedia(parseVideoUrl(inputUrl)) {
+                        newPreviewIv.setImageBitmap(it)
+                    }
+
+                    newPreviewIv.visibility = View.VISIBLE
+                    newPlayBtn.visibility = View.VISIBLE
+                    newVideoUrlEt.visibility = View.GONE
+
                 } else {
                     newVideoUrlEt.text.clear()
                     newVideoUrlEt.visibility = View.GONE
                 }
             }
         }
+
         sendBtn.setOnClickListener {
             val content = newContentTv.text.toString()
-            val inputUrl = newVideoUrlEt.text.toString()
-            if (content.isNotEmpty() && content.isNotBlank() && isYouTubeUrl(inputUrl)) {
-                val newPost = VideoPost(author = "Netology", content = content, videoUrl = inputUrl)
-                postAdapter.savePost(newPost)
-                prepareNewTextPostBody()
-            } else
-                Toast.makeText(this@MainActivity,
+            if (content.isEmpty() || content.isBlank()) {
+                Toast.makeText(
+                    this,
                     R.string.new_post_hint,
                     Toast.LENGTH_SHORT
                 ).show()
-        }
-    }
-
-    private fun isYouTubeUrl(inputUrl: String)
-            = inputUrl.contains("https://www.youtube.com/watch?v=")
-
-    private fun fetchData() = launch {
-        indeterminateBar.visibility = View.VISIBLE
-
-        lateinit var postList : MutableList<Post>
-        lateinit var adsList : MutableList<AdsPost>
-
-        withContext(Dispatchers.IO) {
-            val client = HttpClient {
-                install(JsonFeature) {
-                    acceptContentTypes = listOf(
-                        ContentType.Application.Json
-                    )
-                    serializer = GsonSerializer {
-                        registerTypeAdapter(Post::class.java, PostDeserializer())
-                    }
-                }
+                return@setOnClickListener
             }
-            val postsRequest = async { client.get<List<Post>>(postsUrl) }
-            val adsRequest = async { client.get<List<AdsPost>>(adsUrl) }
 
-            postList = postsRequest.await().toMutableList()
-            adsList = adsRequest.await().toMutableList()
+            val inputUrl = newVideoUrlEt.text.toString()
+            if (isNotYouTubeUrl(inputUrl)) {
+                Toast.makeText(
+                    this,
+                    R.string.new_post_hint,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
 
-            client.close()
+            val post = VideoPost(author = "Netology", content = content, videoUrl = inputUrl)
+
+            networkService.savePost(post, ::updatePostsInAdapter)
+
+            prepareNewTextPostBody()
         }
-
-        postAdapter = PostAdapter(postList, adsList, postListing)
-
-        with(postListing) {
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = postAdapter
-        }
-
-        indeterminateBar.visibility = View.GONE
     }
 
-    fun fillNewPostBody(post: Post, view: CheckBox?, countView: TextView?) {
+    private fun isNotYouTubeUrl(inputUrl: String)
+            = !inputUrl.contains("https://www.youtube.com/watch?v=")
+
+    fun prepareNewRepostBody(post: Post, view: CheckBox?, countView: TextView?) {
         with(newPostLayout) {
-            this.setBackground(getDrawable(R.drawable.rounded_block))
+
+            this.background = getDrawable(R.drawable.rounded_block)
+
             typeGrp.visibility = View.GONE
+
             when (post) {
+
                 is EventPost -> {
                     newLocationGrp.visibility = View.VISIBLE
                     newAddressEt.setText(post.address)
@@ -268,55 +320,68 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                         post.open(context)
                     }
                 }
+
                 is VideoPost -> {
                     newPreviewIv.visibility = View.VISIBLE
+
                     newPlayBtn.visibility = View.VISIBLE
-                    postAdapter.asyncUpdatePreview(post, newPreviewIv)
                     newPlayBtn.setOnClickListener {
                         post.open(context)
                     }
+
+                    postAdapter.loadMedia(post, newPreviewIv)
                 }
+
                 is Repost -> {
                     newContainerFl.visibility = View.VISIBLE
+
                     val repostView = LayoutInflater.from(context)
                         .inflate(R.layout.repost_layout, containerFl, false)
                     postAdapter.initPostView(repostView as ConstraintLayout, postAdapter.findSource(post))
+
                     repostView.findViewById<Group>(R.id.socialGrp).visibility = View.GONE
                     repostView.adsTv.visibility = View.GONE
+
                     newContainerFl.addView(repostView)
                 }
+
                 is ImagePost -> {
                     newPreviewIv.visibility = View.VISIBLE
                     newPlayBtn.visibility = View.GONE
-                    postAdapter.asyncUpdatePreview(post, previewIv)
+
+                    postAdapter.loadMedia(post, previewIv)
                 }
+
                 else -> {} // ignored
             }
+
             sendBtn.setOnClickListener {
                 val content = newContentTv.text.toString()
-                if (content.isNotEmpty() && content.isNotBlank()) {
-                    post.content = content
+                if (content.isEmpty() || content.isBlank()) {
+                    post.content = getString(R.string.repost_text_default) // default content
                 } else {
-                    post.content = getString(R.string.repost_text_default)
+                    post.content = content
                 }
-                postAdapter.savePost(post)
+
+                networkService.savePost(post, ::updatePostsInAdapter)
+
                 prepareNewTextPostBody()
             }
+
             cancelBtn.setOnClickListener {
                 if (post is Repost) {
                     val sharedPost = postAdapter.getPostById(post.source!!)
+
                     sharedPost!!.removeShare()
-                    postAdapter.asyncUpdateSocial(post.source!!, "share", Mode.DELETE)
+                    networkService.updateSocial(post.source!!, SocialAction.SHARE, Mode.DELETE)
+
                     view!!.isChecked = false
+
                     postAdapter.updateSocialCountView(sharedPost.shares, false, countView!!)
                 }
+
                 prepareNewTextPostBody()
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        cancel()
     }
 }

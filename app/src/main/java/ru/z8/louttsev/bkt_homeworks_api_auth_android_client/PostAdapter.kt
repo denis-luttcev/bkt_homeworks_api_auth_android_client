@@ -1,9 +1,5 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.provider.OpenableColumns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,17 +10,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
-import io.ktor.client.HttpClient
-import io.ktor.client.features.json.GsonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.request.delete
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.url
-import io.ktor.http.*
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.post_card_layout.view.*
 import kotlinx.android.synthetic.main.post_card_layout.view.hideBtn
@@ -39,41 +24,48 @@ import kotlinx.android.synthetic.main.post_card_layout.view.contentTv
 import kotlinx.android.synthetic.main.post_card_layout.view.viewsCountTv
 import kotlinx.android.synthetic.main.post_card_layout.view.addressTv
 import kotlinx.android.synthetic.main.post_card_layout.view.locationIv
-import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
-import java.net.URL
-import java.util.*
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI.*
+import java.util.UUID
 
-fun List<AdsPost>.circularIterator() : CircularIterator {
-    return CircularIterator(this)
-}
-
-class CircularIterator(private val list: List<AdsPost>) : Iterator<AdsPost> {
+class CircularIterator(private val ads: MutableList<AdsPost>) : Iterator<AdsPost> {
     private var index: Int = -1
 
-    override fun hasNext(): Boolean = index < list.size - 1
+    override fun hasNext(): Boolean = index < ads.size - 1
 
     override fun next(): AdsPost {
         if (hasNext()) {
             index++
         } else {
             index = 0
-
         }
-        return list[index]
+        return ads[index]
     }
 }
 
+fun MutableList<AdsPost>.circularIterator() : CircularIterator {
+    return CircularIterator(this)
+}
+
 @KtorExperimentalAPI
-class PostAdapter(
-    private val list : MutableList<Post>,
-    ads: MutableList<AdsPost>,
-    private val listingRv: RecyclerView
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), CoroutineScope by MainScope() {
+class PostAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private val posts = mutableListOf<Post>()
+    private val index = mutableMapOf<UUID, Post>()
+    private val ads = mutableListOf<AdsPost>()
+    private val adsIterator = ads.circularIterator()
 
-    private val index: MutableMap<UUID, Post> = list.map { it.id to it }.toMap().toMutableMap()
+    fun addPosts(posts: List<Post>) {
+        this.posts.addAll(0, posts)
+        index.putAll(posts.map { it.id to it }.toMap().toMutableMap())
+    }
 
-    private val adsIterator: Iterator<AdsPost> = ads.circularIterator()
+    fun addAds(ads: List<AdsPost>) {
+        this.ads.addAll(ads)
+    }
+
+    fun getPostsCount() = posts.size
+
+    fun getAdsCount() = ads.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -82,14 +74,14 @@ class PostAdapter(
     }
 
     override fun getItemCount(): Int {
-        return list.size + list.size / 3
+        return posts.size + posts.size / 3
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         var shiftedPosition = position
         val post = if ((position + 1) % 4 !=0) {
             shiftedPosition = position - (position + 1) / 4
-            list[shiftedPosition]
+            posts[shiftedPosition]
         } else {
             adsIterator.next()
         }
@@ -99,13 +91,13 @@ class PostAdapter(
             updateSocialCountView(post.likes, post.liked, likesCountTv)
             likeCb.tag = shiftedPosition
             likeCb.setOnClickListener { view: View ->
-                val thisPost: Post = list[view.tag as Int]
+                val thisPost: Post = posts[view.tag as Int]
                 if ((view as CheckBox).isChecked) {
                     thisPost.like()
-                    asyncUpdateSocial(thisPost.id, "like", Mode.POST)
+                    networkService.updateSocial(thisPost.id, SocialAction.LIKE, Mode.POST)
                 } else {
                     thisPost.dislike()
-                    asyncUpdateSocial(thisPost.id, "like", Mode.DELETE)
+                    networkService.updateSocial(thisPost.id, SocialAction.LIKE, Mode.DELETE)
                 }
                 updateSocialCountView(thisPost.likes, thisPost.liked, likesCountTv)
             }
@@ -114,14 +106,14 @@ class PostAdapter(
             updateSocialCountView(post.comments, post.commented, commentsCountTv)
             commentCb.tag = shiftedPosition
             commentCb.setOnClickListener { view: View ->
-                val thisPost: Post = list[view.tag as Int]
+                val thisPost: Post = posts[view.tag as Int]
                 if ((view as CheckBox).isChecked) {
                     //TODO: implement get comment text, its processing and display
                     thisPost.makeComment()
-                    asyncUpdateSocial(thisPost.id, "comment", Mode.POST)
+                    networkService.updateSocial(thisPost.id, SocialAction.COMMENT, Mode.POST)
                 } else {
                     thisPost.removeComment()
-                    asyncUpdateSocial(thisPost.id, "comment", Mode.DELETE)
+                    networkService.updateSocial(thisPost.id, SocialAction.COMMENT, Mode.DELETE)
                 }
                 updateSocialCountView(thisPost.comments, thisPost.commented, commentsCountTv)
             }
@@ -130,13 +122,13 @@ class PostAdapter(
             updateSocialCountView(post.shares, post.shared, sharesCountTv)
             shareCb.tag = shiftedPosition
             shareCb.setOnClickListener { view: View ->
-                val thisPost: Post = list[view.tag as Int]
+                val thisPost: Post = posts[view.tag as Int]
                 if ((view as CheckBox).isChecked) {
                     thisPost.share(context)
-                    asyncUpdateSocial(thisPost.id, "share", Mode.POST)
+                    networkService.updateSocial(thisPost.id, SocialAction.SHARE, Mode.POST)
                     // temporarily reposting
                     (context as MainActivity)
-                        .fillNewPostBody(
+                        .prepareNewRepostBody(
                             Repost(author = "Netology", source = thisPost.id),
                             view,
                             sharesCountTv
@@ -153,8 +145,8 @@ class PostAdapter(
 
             hideBtn.tag = shiftedPosition
             hideBtn.setOnClickListener { view: View ->
-                val thisPost: Post = list[view.tag as Int]
-                list.remove(thisPost)
+                val thisPost: Post = posts[view.tag as Int]
+                posts.remove(thisPost)
                 notifyDataSetChanged()
             }
         }
@@ -197,7 +189,7 @@ class PostAdapter(
                 is VideoPost -> {
                     previewIv.visibility = View.VISIBLE
                     playBtn.visibility = View.VISIBLE
-                    asyncUpdatePreview(post, previewIv)
+                    loadMedia(post, previewIv)
                     playBtn.setOnClickListener {
                         post.open(context)
                     }
@@ -227,7 +219,7 @@ class PostAdapter(
                 is ImagePost -> {
                     previewIv.visibility = View.VISIBLE
                     playBtn.visibility = View.GONE
-                    asyncUpdatePreview(post, previewIv)
+                    loadMedia(post, previewIv)
                 }
                 else -> {} // ignored
             }
@@ -241,11 +233,10 @@ class PostAdapter(
 
     fun getPostById(id: UUID) = index[id]
 
-    fun updateSocialCountView(
-        count: Int,
-        isSelected: Boolean,
-        textView: TextView
-    ) {
+    fun updateSocialCountView(count: Int,
+                              isSelected: Boolean,
+                              textView: TextView) {
+
         textView.text = if (count > 0) count.toString() else ""
         textView.setTextColor(
             ContextCompat.getColor(
@@ -255,8 +246,8 @@ class PostAdapter(
         )
     }
 
-    fun asyncUpdatePreview(post: Post, imageView : ImageView) = launch {
-        val url = when(post) {
+    fun loadMedia(post: Post, imageView : ImageView) {
+        val mediaUrl = when(post) {
             is ImagePost -> {
                 post.imageUrl
             }
@@ -265,146 +256,10 @@ class PostAdapter(
             }
             else -> { "" } // ignored
         }
-        asyncUpdatePreview(url, imageView)
-    }
-
-    fun asyncUpdatePreview(url: String, imageView : ImageView) = launch {
-        var image: Bitmap? = null
-
-        withContext(Dispatchers.IO) {
-            val client = HttpClient()
-            image = BitmapFactory
-                .decodeStream(
-                    URL(url)
-                        .openConnection()
-                        .getInputStream())
-            client.close()
+        networkService.loadMedia(mediaUrl) {
+            imageView.setImageBitmap(it)
         }
-        imageView.setImageBitmap(image)
-    }
-
-    fun asyncUpdateSocial(id: UUID, attribute: String, mode: Mode) = launch {
-        withContext(Dispatchers.IO) {
-            val client = HttpClient()
-            val url =
-                "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts/${id}/${attribute}"
-            when (mode) {
-                Mode.POST -> client.post<String>(url)
-                Mode.DELETE -> client.delete<String>(url)
-            }
-            client.close()
-        }
-    }
-
-    fun saveMedia(uri: Uri, newPreviewIv: ImageView) = launch(Dispatchers.Main) {
-        val context = newPreviewIv.context
-        newPreviewIv.tag = withContext(Dispatchers.IO) {
-            val client = HttpClient {
-                install(JsonFeature) {
-                    acceptContentTypes = listOf(
-                        ContentType.Application.Json
-                    )
-                }
-            }
-
-            val filename = try {
-                context.contentResolver.query(
-                    uri,
-                    null,
-                    null,
-                    null,
-                    null
-                )?.let { cursor ->
-                    cursor.run {
-                        if (moveToFirst()) getString(getColumnIndex(OpenableColumns.DISPLAY_NAME))
-                        else null
-                    }.also { cursor.close() }
-                }
-            } catch (e : Exception) { null }
-            val contentType = when(filename!!.split(".")[1].toLowerCase(Locale.getDefault())) {
-                "jpeg" -> ContentType.Image.JPEG
-                "jpg" -> ContentType.Image.JPEG
-                "png" -> ContentType.Image.PNG
-                else -> ContentType.Image.Any
-            }
-
-            val media = client.post<Media> {
-                url("https://api-auth-server-luttcev.herokuapp.com/api/v1/media")
-                //contentType(ContentType.MultiPart.FormData)
-                body = MultiPartFormDataContent(
-                    formData {
-                        append(
-                            key = "file",
-                            value = context.contentResolver.openInputStream(uri)!!.readBytes(),
-                            headers = Headers.build {
-                                append(HttpHeaders.ContentType, contentType)
-                                append(
-                                    HttpHeaders.ContentDisposition,
-                                    ContentDisposition.File
-                                        .withParameter(ContentDisposition.Parameters.Name, "file")
-                                        .withParameter(ContentDisposition.Parameters.FileName, filename)
-                                        .toString()
-                                )
-                            }
-                        )
-                    }
-                )
-            }
-            client.close()
-            return@withContext media.imageUrl
-        }
-    }
-
-    fun savePost(post: Post) = launch(Dispatchers.Main) {
-        withContext(Dispatchers.IO) {
-            val client = HttpClient {
-                install(JsonFeature) {
-                    acceptContentTypes = listOf(
-                        ContentType.Application.Json
-                    )
-                }
-            }
-            post.id = client.post {
-                url("https://api-auth-server-luttcev.herokuapp.com/api/v1/posts")
-                contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                body = Gson().toJsonTree(Post.fromModel(post))
-            }
-            client.close()
-        }
-
-        updateData()
-    }
-
-    fun updateData() = launch(Dispatchers.Main) {
-        lateinit var newPosts : List<Post>
-
-        withContext(Dispatchers.IO) {
-            val client = HttpClient {
-                install(JsonFeature) {
-                    acceptContentTypes = listOf(
-                        ContentType.Application.Json
-                    )
-                    serializer = GsonSerializer {
-                        registerTypeAdapter(Post::class.java, PostDeserializer())
-                    }
-                }
-            }
-            val url = "https://api-auth-server-luttcev.herokuapp.com/api/v1/posts/${list.size}"
-            newPosts = client.get<List<Post>>(url).toList()
-
-            client.close()
-        }
-
-        list.addAll(0, newPosts)
-        index.putAll(newPosts.map { it.id to it}.toMap())
-        notifyItemRangeInserted(0, newPosts.size)
-
-        listingRv.smoothScrollToPosition(0)
     }
 }
 
 class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
-
-enum class Mode {
-    POST, DELETE
-}
