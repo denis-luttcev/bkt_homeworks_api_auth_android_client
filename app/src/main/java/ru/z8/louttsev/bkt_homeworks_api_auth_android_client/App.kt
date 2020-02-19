@@ -9,27 +9,22 @@ import org.kodein.di.generic.eagerSingleton
 import org.kodein.di.generic.instance
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.NetworkService
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.NetworkServiceWithKtorHttpClientImpl
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.PostRepository
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.PostRepositoryInMemoryImpl
 
 @KtorExperimentalAPI
 val kodein = Kodein{
     bind<NetworkService>() with eagerSingleton {
         NetworkServiceWithKtorHttpClientImpl()
     }
-    bind<PostAdapter>() with eagerSingleton {
-        PostAdapter()
+    bind<PostRepository>() with eagerSingleton {
+        PostRepositoryInMemoryImpl()
     }
 }
 
 @KtorExperimentalAPI
 val networkService by kodein.instance<NetworkService>()
 @KtorExperimentalAPI
-val postAdapter by kodein.instance<PostAdapter>()
+val repository by kodein.instance<PostRepository>()
 
-lateinit var sResources: Resources
-
-class App : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        sResources = resources
-    }
-}
+class App : Application() {}

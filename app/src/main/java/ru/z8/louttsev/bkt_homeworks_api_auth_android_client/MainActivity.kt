@@ -25,6 +25,8 @@ private const val GALLERY_REQUEST = 100
 
 @KtorExperimentalAPI
 class MainActivity : AppCompatActivity() {
+    private val postAdapter = PostAdapter()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -34,8 +36,8 @@ class MainActivity : AppCompatActivity() {
 
         swipeContainer.isRefreshing = true
         networkService.fetchAdapterData { posts: List<Post>, ads: List<AdsPost> ->
-            postAdapter.addPosts(posts)
-            postAdapter.addAds(ads)
+            repository.addPosts(posts)
+            repository.addAds(ads)
 
             postAdapter.notifyDataSetChanged()
 
@@ -43,8 +45,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         swipeContainer.setOnRefreshListener {
-            networkService.updateAds(postAdapter.getAdsCount()) {
-                postAdapter.addAds(it)
+            networkService.updateAds(repository.getAdsCount()) {
+                repository.addAds(it)
             }
 
             updatePostsInAdapter()
@@ -55,8 +57,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun updatePostsInAdapter() {
         swipeContainer.isRefreshing = true
-        networkService.updatePosts(postAdapter.getPostsCount()) {
-            postAdapter.addPosts(it)
+        networkService.updatePosts(repository.getPostsCount()) {
+            repository.addPosts(it)
             postAdapter.notifyDataSetChanged()
 
             postListing.smoothScrollToPosition(0)
@@ -329,7 +331,7 @@ class MainActivity : AppCompatActivity() {
                         post.open(context)
                     }
 
-                    postAdapter.loadMedia(post, newPreviewIv)
+                    postAdapter.getLayoutFiller().updateImageView(post, newPreviewIv)
                 }
 
                 is Repost -> {
@@ -337,7 +339,11 @@ class MainActivity : AppCompatActivity() {
 
                     val repostView = LayoutInflater.from(context)
                         .inflate(R.layout.repost_layout, containerFl, false)
-                    postAdapter.initPostView(repostView as ConstraintLayout, postAdapter.findSource(post))
+                    postAdapter.getLayoutFiller()
+                        .initPostView(
+                            repostView as ConstraintLayout,
+                            repository.findRepostSource(post)
+                        )
 
                     repostView.findViewById<Group>(R.id.socialGrp).visibility = View.GONE
                     repostView.adsTv.visibility = View.GONE
@@ -349,7 +355,7 @@ class MainActivity : AppCompatActivity() {
                     newPreviewIv.visibility = View.VISIBLE
                     newPlayBtn.visibility = View.GONE
 
-                    postAdapter.loadMedia(post, previewIv)
+                    postAdapter.getLayoutFiller().updateImageView(post, previewIv)
                 }
 
                 else -> {} // ignored
@@ -370,14 +376,15 @@ class MainActivity : AppCompatActivity() {
 
             cancelBtn.setOnClickListener {
                 if (post is Repost) {
-                    val sharedPost = postAdapter.getPostById(post.source!!)
+                    val sharedPost = repository.getPostById(post.source!!)
 
                     sharedPost!!.removeShare()
                     networkService.updateSocial(post.source!!, SocialAction.SHARE, Mode.DELETE)
 
                     view!!.isChecked = false
 
-                    postAdapter.updateSocialCountView(sharedPost.shares, false, countView!!)
+                    postAdapter.getLayoutFiller()
+                        .updateSocialCountView(sharedPost.shares, false, countView!!)
                 }
 
                 prepareNewTextPostBody()
