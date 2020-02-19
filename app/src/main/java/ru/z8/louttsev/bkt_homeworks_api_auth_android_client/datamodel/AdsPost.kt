@@ -17,7 +17,7 @@ class AdsPost(
     shared : Boolean = false,
     shares : Int = 0,
     views : Int = 0,
-    var adsUrl : String = ""
+    private var adsUrl : String = ""
 ) : Post(id, Type.ADS, author, content, created, liked, likes, commented, comments, shared, shares, views)
 {
     // these are stubs (not used)

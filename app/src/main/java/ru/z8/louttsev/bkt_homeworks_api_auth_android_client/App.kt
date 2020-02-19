@@ -1,7 +1,6 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
 import android.app.Application
-import android.content.res.Resources
 import io.ktor.util.KtorExperimentalAPI
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
@@ -27,4 +26,4 @@ val networkService by kodein.instance<NetworkService>()
 @KtorExperimentalAPI
 val repository by kodein.instance<PostRepository>()
 
-class App : Application() {}
+class App : Application()

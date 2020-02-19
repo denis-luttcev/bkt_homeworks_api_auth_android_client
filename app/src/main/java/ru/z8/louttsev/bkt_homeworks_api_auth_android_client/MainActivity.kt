@@ -378,7 +378,7 @@ class MainActivity : AppCompatActivity() {
                 if (post is Repost) {
                     val sharedPost = repository.getPostById(post.source!!)
 
-                    sharedPost!!.removeShare()
+                    sharedPost.removeShare()
                     networkService.updateSocial(post.source!!, SocialAction.SHARE, Mode.DELETE)
 
                     view!!.isChecked = false

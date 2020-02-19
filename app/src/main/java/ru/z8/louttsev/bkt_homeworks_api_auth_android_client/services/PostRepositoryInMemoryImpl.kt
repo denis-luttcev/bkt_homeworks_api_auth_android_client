@@ -42,12 +42,7 @@ class PostRepositoryInMemoryImpl : PostRepository {
             -1
         }
 
-    private fun isPostPosition(itemPosition: Int) :Boolean {
-        val a = (itemPosition + 1) % (ADS_RATIO + 1)
-        val b = (itemPosition + 1) % 4
-
-        return (itemPosition + 1) % (ADS_RATIO + 1) != 0
-    }
+    private fun isPostPosition(itemPosition: Int) = (itemPosition + 1) % (ADS_RATIO + 1) != 0
 
     override fun getPostById(id: UUID) = index[id]!!
 

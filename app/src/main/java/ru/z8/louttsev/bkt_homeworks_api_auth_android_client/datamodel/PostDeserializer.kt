@@ -3,7 +3,6 @@ package ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
-import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.Post.Type.*
 import java.lang.reflect.Type
 import java.util.UUID
 

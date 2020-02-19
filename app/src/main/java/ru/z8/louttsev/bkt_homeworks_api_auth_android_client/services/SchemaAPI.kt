@@ -17,7 +17,7 @@ enum class SchemaAPI(val route: String) {
         POST, DELETE
     }
 
-    enum class SocialAction(val action: String) {
+    enum class SocialAction(private val action: String) {
         LIKE("like"),
         COMMENT("comment"),
         SHARE("share");
