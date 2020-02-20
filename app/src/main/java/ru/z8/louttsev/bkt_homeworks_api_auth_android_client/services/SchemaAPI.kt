@@ -7,7 +7,10 @@ private const val API_URL = "https://api-auth-server-luttcev.herokuapp.com/api/v
 enum class SchemaAPI(val route: String) {
     POSTS("${API_URL}posts"),
     ADS("${API_URL}ads"),
-    MEDIA("${API_URL}media");
+    MEDIA("${API_URL}media"),
+    REGISTRATION("${API_URL}registration"),
+    AUTHENTICATION("${API_URL}authentication"),
+    ME("${API_URL}me");
 
     fun routeWith(count: Int) = this.route + "/${count}"
 
