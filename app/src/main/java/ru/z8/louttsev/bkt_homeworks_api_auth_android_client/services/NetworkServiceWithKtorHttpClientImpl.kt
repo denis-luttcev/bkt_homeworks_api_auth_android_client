@@ -18,6 +18,7 @@ import io.ktor.client.request.url
 import io.ktor.http.*
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.*
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.User
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.AdsPost
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.Media
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.Post
@@ -146,5 +147,9 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
             withContext(Dispatchers.Main) { dataHandler(image) }
         }
+    }
+
+    override fun getMe(dataHandler: (me: User) -> Unit) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
