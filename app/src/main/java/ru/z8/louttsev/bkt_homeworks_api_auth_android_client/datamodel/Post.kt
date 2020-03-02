@@ -8,6 +8,7 @@ abstract class Post(
     var id : UUID = UUID.randomUUID(),
     val type : Type,
     var author : String,
+    var isMy: Boolean,
     var content : String,
     var created : Long = System.currentTimeMillis(), // in millis
     var liked : Boolean = false,
@@ -25,7 +26,6 @@ abstract class Post(
 
     abstract class RequestDto(model: Post) {
         val type: Type = model.type
-        val author: String = model.author
         val content: String = model.content
     }
 

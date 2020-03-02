@@ -10,6 +10,7 @@ fun parseVideoUrl(url : String) = "https://img.youtube.com/vi/${Regex("""v=""").
 class VideoPost(
     id : UUID = UUID.randomUUID(),
     author : String = "",
+    isMy: Boolean = false,
     content : String = "",
     created : Long = System.currentTimeMillis(), // in millis
     liked : Boolean = false,
@@ -20,7 +21,7 @@ class VideoPost(
     shares : Int = 0,
     views : Int = 0,
     var videoUrl : String = ""
-) : Post(id, Type.VIDEO, author, content, created, liked, likes, commented, comments, shared, shares, views)
+) : Post(id, Type.VIDEO, author, isMy, content, created, liked, likes, commented, comments, shared, shares, views)
 {
     class RequestDto(model: VideoPost) : Post.RequestDto(model) {
         val videoUrl: String = model.videoUrl

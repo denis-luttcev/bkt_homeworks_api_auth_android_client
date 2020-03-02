@@ -26,6 +26,7 @@ class PostDeserializer : JsonDeserializer<Post> {
         }
         with(post!!) {
             author = data.get("author").asString
+            isMy = data.get("isMy").asBoolean
             content = data.get("content").asString
             created = data.get("created").asLong
             liked = data.get("liked").asBoolean

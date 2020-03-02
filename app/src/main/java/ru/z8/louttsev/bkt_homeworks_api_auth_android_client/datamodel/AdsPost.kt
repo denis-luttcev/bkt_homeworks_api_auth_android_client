@@ -8,6 +8,7 @@ import java.util.UUID
 class AdsPost(
     id : UUID = UUID.randomUUID(),
     author : String = "",
+    isMy: Boolean = false,
     content : String = "",
     created : Long = System.currentTimeMillis(), // in millis
     liked : Boolean = false,
@@ -18,7 +19,7 @@ class AdsPost(
     shares : Int = 0,
     views : Int = 0,
     private var adsUrl : String = ""
-) : Post(id, Type.ADS, author, content, created, liked, likes, commented, comments, shared, shares, views)
+) : Post(id, Type.ADS, author, isMy, content, created, liked, likes, commented, comments, shared, shares, views)
 {
     // these are stubs (not used)
     class RequestDto(model: AdsPost) : Post.RequestDto(model)
