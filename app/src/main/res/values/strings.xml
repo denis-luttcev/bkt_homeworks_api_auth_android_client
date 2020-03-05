@@ -17,4 +17,12 @@
     <string name="password_hint">Enter your password</string>
     <string name="login_btn_text">Login</string>
     <string name="registration_btn_text">Registration</string>
+    <string name="authentication_error_message">Invalid login or password</string>
+    <string name="authorization_error_message">Authorization required</string>
+    <string name="locked_error_message">Operation is prohibited</string>
+    <string name="unsupported_media_error_message">This media isn\'t supported</string>
+    <string name="redirect_error_message">Redirect error</string>
+    <string name="client_error_message">The request failed</string>
+    <string name="server_error_message">Server response error</string>
+    <string name="response_error_message">Error occurred</string>
 </resources>

@@ -1,9 +1,7 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
 import android.app.Application
-import android.content.Context
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.*
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.eagerSingleton

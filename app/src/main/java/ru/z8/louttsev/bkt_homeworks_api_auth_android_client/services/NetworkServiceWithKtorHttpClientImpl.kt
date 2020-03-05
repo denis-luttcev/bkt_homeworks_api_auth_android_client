@@ -7,14 +7,17 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import com.google.gson.Gson
 import io.ktor.client.HttpClient
+import io.ktor.client.features.*
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
+import io.ktor.features.UnsupportedMediaTypeException
 import io.ktor.http.*
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.*
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.R
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.User
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.AdsPost
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.Media
@@ -25,6 +28,10 @@ import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI.*
 import java.net.URL
 import java.util.*
 
+class AuthenticationException : Exception()
+class AuthorizationException : Exception()
+class LockedException : Exception()
+
 @KtorExperimentalAPI
 class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), NetworkService {
     private val client = HttpClient {
@@ -32,6 +39,19 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
             acceptContentTypes = listOf(ContentType.Application.Json)
             serializer = GsonSerializer {
                 registerTypeAdapter(Post::class.java, PostDeserializer())
+            }
+        }
+        HttpResponseValidator {
+            validateResponse { response ->
+                val status = response.status
+
+                when (status) {
+                    HttpStatusCode.Unauthorized -> throw AuthenticationException()
+                    HttpStatusCode.Forbidden -> throw AuthorizationException()
+                    HttpStatusCode.Locked -> throw LockedException()
+                    HttpStatusCode.UnsupportedMediaType ->
+                        throw UnsupportedMediaTypeException(response.contentType()!!)
+                }
             }
         }
     }
@@ -166,17 +186,21 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         }
     }
 
-    override fun authenticate(login: String, password: String, dataHandler: (token: String) -> Unit) {
+    override fun authenticate(login: String, password: String, dataHandler: (token: String?) -> Unit) {
         launch(Dispatchers.IO) {
             val request = User.AuthenticationRequestDto(login, password)
 
-            val response = client.post<User.AuthenticationResponseDto> {
-                url(AUTHENTICATION.route)
-                contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
-                body = Gson().toJsonTree(request)
-            }
+            try {
+                val response = client.post<User.AuthenticationResponseDto> {
+                    url(AUTHENTICATION.route)
+                    contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
+                    body = Gson().toJsonTree(request)
+                }
 
-            withContext(Dispatchers.Main) { dataHandler(response.token) }
+                withContext(Dispatchers.Main) { dataHandler(response.token) }
+            } catch (cause: AuthenticationException) {
+                withContext(Dispatchers.Main) { dataHandler(null) }
+            }
         }
     }
 
