@@ -17,5 +17,7 @@ interface NetworkService {
     fun saveMedia(mediaUri: Uri, context: Context, dataHandler: (permanentUrl: String) -> Unit)
     fun updateSocial(postID: UUID, action: SocialAction, mode: Mode)
     fun loadMedia(mediaUrl: String, dataHandler: (image: Bitmap) -> Unit)
-    fun getMe(dataHandler: (me: User) -> Unit)
+    fun authenticate(login: String, password: String, dataHandler: (token: String) -> Unit)
+    fun getMe(dataHandler: (user: User) -> Unit)
+    fun cancellation()
 }

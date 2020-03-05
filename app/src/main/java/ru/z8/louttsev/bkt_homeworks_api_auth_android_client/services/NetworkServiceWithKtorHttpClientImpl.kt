@@ -9,12 +9,9 @@ import com.google.gson.Gson
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.request.delete
+import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.url
 import io.ktor.http.*
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.*
@@ -23,6 +20,7 @@ import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.AdsPost
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.Media
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.Post
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.PostDeserializer
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.mytoken
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI.*
 import java.net.URL
 import java.util.*
@@ -40,8 +38,16 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
     override fun fetchAdapterData(dataHandler: (posts: List<Post>, ads: List<AdsPost>) -> Unit) {
         launch(Dispatchers.IO) {
-            val postsRequest = async { client.get<List<Post>>(POSTS.route) }
-            val adsRequest = async { client.get<List<AdsPost>>(ADS.route) }
+            val postsRequest = async {
+                client.get<List<Post>>(POSTS.route) {
+                    header(HttpHeaders.Authorization, "Bearer ${mytoken}")
+                }
+            }
+            val adsRequest = async {
+                client.get<List<AdsPost>>(ADS.route) {
+                    header(HttpHeaders.Authorization, "Bearer ${mytoken}")
+                }
+            }
 
             val posts = postsRequest.await()
             val ads = adsRequest.await()
@@ -52,7 +58,9 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
     override fun updatePosts(currentCounter: Int, dataHandler: (posts: List<Post>) -> Unit) {
         launch(Dispatchers.IO) {
-            val posts = client.get<List<Post>>(POSTS.routeWith(currentCounter))
+            val posts = client.get<List<Post>>(POSTS.routeWith(currentCounter)) {
+                header(HttpHeaders.Authorization, "Bearer ${mytoken}")
+            }
 
             withContext(Dispatchers.Main) { dataHandler(posts) }
         }
@@ -60,7 +68,9 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
     override fun updateAds(currentCounter: Int, dataHandler: (ads: List<AdsPost>) -> Unit) {
         launch(Dispatchers.IO) {
-            val ads = client.get<List<AdsPost>>(ADS.routeWith(currentCounter))
+            val ads = client.get<List<AdsPost>>(ADS.routeWith(currentCounter)) {
+                header(HttpHeaders.Authorization, "Bearer ${mytoken}")
+            }
 
             withContext(Dispatchers.Main) { dataHandler(ads) }
         }
@@ -68,8 +78,8 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
     override fun savePost(post: Post, completionListener: () -> Unit) {
         launch(Dispatchers.IO) {
-            val permanentID = client.post<UUID> {
-                url(POSTS.route)
+            val permanentID = client.post<UUID>(POSTS.route) {
+                header(HttpHeaders.Authorization, "Bearer ${mytoken}")
                 contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                 body = Gson().toJsonTree(Post.fromModel(post))
             }
@@ -104,8 +114,8 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         }
 
         launch(Dispatchers.IO) {
-            val media = client.post<Media> {
-                url(MEDIA.route)
+            val media = client.post<Media>(MEDIA.route) {
+                header(HttpHeaders.Authorization, "Bearer ${mytoken}")
                 body = MultiPartFormDataContent(
                     formData {
                         append(
@@ -135,21 +145,53 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
             val url = POSTS.routeWith(postID, action)
 
             when (mode) {
-                Mode.POST -> client.post<String>(url)
-                Mode.DELETE -> client.delete<String>(url)
+                Mode.POST -> client.post<String>(url) {
+                    header(HttpHeaders.Authorization, "Bearer ${mytoken}")
+                }
+                Mode.DELETE -> client.delete<String>(url) {
+                    header(HttpHeaders.Authorization, "Bearer ${mytoken}")
+                }
             }
         }
     }
 
     override fun loadMedia(mediaUrl: String, dataHandler: (image: Bitmap) -> Unit) {
         launch(Dispatchers.IO) {
-            val image = BitmapFactory.decodeStream(URL(mediaUrl).openConnection().getInputStream())
+            val connection = URL(mediaUrl).openConnection()
+            connection.setRequestProperty(HttpHeaders.Authorization, "Bearer ${mytoken}")
+
+            val image = BitmapFactory.decodeStream(connection.getInputStream())
 
             withContext(Dispatchers.Main) { dataHandler(image) }
         }
     }
 
-    override fun getMe(dataHandler: (me: User) -> Unit) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun authenticate(login: String, password: String, dataHandler: (token: String) -> Unit) {
+        launch(Dispatchers.IO) {
+            val request = User.AuthenticationRequestDto(login, password)
+
+            val response = client.post<User.AuthenticationResponseDto> {
+                url(AUTHENTICATION.route)
+                contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
+                body = Gson().toJsonTree(request)
+            }
+
+            withContext(Dispatchers.Main) { dataHandler(response.token) }
+        }
+    }
+
+    override fun getMe(dataHandler: (user: User) -> Unit) {
+        launch(Dispatchers.IO) {
+            val me = client.get<User>(ME.route) {
+                header(HttpHeaders.Authorization, "Bearer ${mytoken}")
+            }
+
+            withContext(Dispatchers.Main) { dataHandler(me) }
+        }
+    }
+
+    override fun cancellation() {
+        cancel()
+        //client.close()
     }
 }

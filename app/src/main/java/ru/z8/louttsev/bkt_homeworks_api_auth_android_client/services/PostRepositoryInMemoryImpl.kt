@@ -22,7 +22,7 @@ class PostRepositoryInMemoryImpl : PostRepository {
         this.ads.addAll(ads)
     }
 
-    override fun getListItemCount() = posts.size + posts.size * ADS_RATIO
+    override fun getListItemCount() = posts.size + posts.size / ADS_RATIO
 
     override fun getPostsCount() = posts.size
 

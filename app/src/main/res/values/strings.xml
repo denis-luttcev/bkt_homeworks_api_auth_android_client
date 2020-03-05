@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">bkt_homeworks_api_auth_android_client</string>
+    <string name="app_name">Social network</string>
+    <string name="main_activity_name">List of posts</string>
+    <string name="login_activity_name">Sign in</string>
     <string name="hide">Hide it</string>
     <string name="ads">Ads post</string>
     <string name="new_post_hint">Write something</string>
@@ -9,4 +11,10 @@
     <string name="video_url_hint">Enter YouTube video url</string>
     <string name="video_url_error_message">Enter correct YouTube video url</string>
     <string name="repost_text_default">Reposted</string>
+    <string name="login_label">Login</string>
+    <string name="password_label">Password</string>
+    <string name="login_hint">Enter your login</string>
+    <string name="password_hint">Enter your password</string>
+    <string name="login_btn_text">Login</string>
+    <string name="registration_btn_text">Registration</string>
 </resources>

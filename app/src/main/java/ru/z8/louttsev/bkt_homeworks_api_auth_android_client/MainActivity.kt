@@ -34,16 +34,6 @@ class MainActivity : AppCompatActivity() {
         postListing.layoutManager = LinearLayoutManager(this)
         postListing.adapter = postAdapter
 
-        swipeContainer.isRefreshing = true
-        networkService.fetchAdapterData { posts: List<Post>, ads: List<AdsPost> ->
-            repository.addPosts(posts)
-            repository.addAds(ads)
-
-            postAdapter.notifyDataSetChanged()
-
-            swipeContainer.isRefreshing = false
-        }
-
         swipeContainer.setOnRefreshListener {
             networkService.updateAds(repository.getAdsCount()) {
                 repository.addAds(it)
@@ -53,6 +43,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         prepareNewTextPostBody()
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        swipeContainer.isRefreshing = true
+        networkService.fetchAdapterData { posts: List<Post>, ads: List<AdsPost> ->
+            repository.addPosts(posts)
+            repository.addAds(ads)
+
+            postAdapter.notifyDataSetChanged()
+
+            swipeContainer.isRefreshing = false
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        //networkService.cancellation()
     }
 
     private fun updatePostsInAdapter() {

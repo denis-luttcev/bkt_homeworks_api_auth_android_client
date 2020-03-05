@@ -3,6 +3,7 @@ package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 import android.app.Application
 import android.content.Context
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.*
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.eagerSingleton
@@ -32,22 +33,9 @@ var mytoken: String? = null
 var myself: User? = null
 
 @KtorExperimentalAPI
-class App : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        mytoken = getSharedPreferences("security", Context.MODE_PRIVATE).getString("token", null)
-        if (mytoken == null) {
-            //TODO: start authentication activity
+class App : Application()
 
-        }
-        getMe()
-    }
-
-    private fun getMe() {
-        networkService.getMe { me ->
-            myself = me
-        }
-    }
+data class User(val id: UUID, val username: String) {
+    data class AuthenticationRequestDto(val login: String, val password: String)
+    data class AuthenticationResponseDto(val token: String)
 }
-
-data class User(val id: UUID, val username: String)
