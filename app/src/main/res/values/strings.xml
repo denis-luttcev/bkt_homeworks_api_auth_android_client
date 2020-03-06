@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Social network</string>
     <string name="main_activity_name">List of posts</string>
+    <string name="welcome">"Welcome, "</string>
     <string name="login_activity_name">Sign in</string>
+    <string name="registration_activity_name">New user</string>
     <string name="hide">Hide it</string>
     <string name="ads">Ads post</string>
     <string name="new_post_hint">Write something</string>
@@ -11,12 +13,20 @@
     <string name="video_url_hint">Enter YouTube video url</string>
     <string name="video_url_error_message">Enter correct YouTube video url</string>
     <string name="repost_text_default">Reposted</string>
+    <string name="username_label">Username</string>
     <string name="login_label">Login</string>
     <string name="password_label">Password</string>
+    <string name="password_confirmation_label">Password confirmation</string>
+    <string name="username_hint">Enter your username</string>
     <string name="login_hint">Enter your login</string>
     <string name="password_hint">Enter your password</string>
+    <string name="password_confirmation_hint">Re-enter your password</string>
     <string name="login_btn_text">Login</string>
     <string name="registration_btn_text">Registration</string>
+    <string name="registrate_btn_text">Registrate user</string>
+    <string name="registration_data_error_message">Needed not empty username</string>
+    <string name="authentication_data_error_message">Needed not empty login and password</string>
+    <string name="password_confirmation_error_message">Entered passwords don\'t match</string>
     <string name="authentication_error_message">Invalid login or password</string>
     <string name="authorization_error_message">Authorization required</string>
     <string name="locked_error_message">Operation is prohibited</string>

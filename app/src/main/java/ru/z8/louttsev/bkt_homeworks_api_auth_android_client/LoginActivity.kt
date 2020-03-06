@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.Toast
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.activity_login.*
-import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.AuthenticationException
 
 @KtorExperimentalAPI
 class LoginActivity : AppCompatActivity() {
@@ -16,35 +15,49 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        if (mytoken != null) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        }
-
         loginBtn.setOnClickListener(::login)
 
-        //TODO: implement registration
+        registrationBtn.setOnClickListener {
+            startActivity(Intent(this@LoginActivity, RegistrationActivity::class.java))
+        }
+    }
+
+    /*override fun onStop() {
+        super.onStop()
+
+        if (mytoken == null) {
+            networkService.cancellation()
+        }
+    }*/
+
+    override fun onStart() {
+        super.onStart()
+
+        if (mytoken != null) {
+            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+            finish()
+        }
     }
 
     private fun login(view: View) {
-        networkService.authenticate(
-            loginEdt.text.toString(),
-            passwordEdt.text.toString(),
-            ::checkAuthentication
-        )
+        val login = loginEdt.text.toString()
+        val password = passwordEdt.text.toString()
+
+        if (login.isEmpty() || password.isEmpty()) {
+            Toast.makeText(
+                this,
+                getString(R.string.authentication_data_error_message),
+                Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+
+        networkService.authenticate(login, password, ::checkAuthentication)
     }
 
     private fun checkAuthentication(token: String?) {
-        if (token != null) {
-            mytoken = token
-
-            networkService.getMe { user ->
-                myself = user
-
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            }
-        } else {
+        if (token == null) {
             Toast.makeText(
                 this,
                 getString(R.string.authentication_error_message),
@@ -53,6 +66,17 @@ class LoginActivity : AppCompatActivity() {
 
             loginEdt.text.clear()
             passwordEdt.text.clear()
+
+            return
+        }
+
+        mytoken = token
+
+        networkService.getMe { user ->
+            myself = user
+
+            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+            finish()
         }
     }
 }

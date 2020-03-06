@@ -34,6 +34,7 @@ var myself: User? = null
 class App : Application()
 
 data class User(val id: UUID, val username: String) {
+    data class RegistrationRequestDto(val username: String, val login: String, val password: String)
     data class AuthenticationRequestDto(val login: String, val password: String)
     data class AuthenticationResponseDto(val token: String)
 }

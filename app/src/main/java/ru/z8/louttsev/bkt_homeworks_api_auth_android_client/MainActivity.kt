@@ -43,6 +43,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         prepareNewTextPostBody()
+
+        val welcomeMessage = getString(R.string.welcome) + myself!!.username
+        currentUser.text = welcomeMessage
     }
 
     override fun onStart() {
@@ -59,11 +62,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStop() {
+    /*override fun onStop() {
         super.onStop()
 
-        //networkService.cancellation()
-    }
+        networkService.cancellation()
+    }*/
 
     private fun updatePostsInAdapter() {
         swipeContainer.isRefreshing = true

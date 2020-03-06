@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.OpenableColumns
 import com.google.gson.Gson
+import com.google.gson.JsonElement
 import io.ktor.client.HttpClient
 import io.ktor.client.features.*
 import io.ktor.client.features.json.GsonSerializer
@@ -13,9 +14,11 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
+import io.ktor.features.BadRequestException
 import io.ktor.features.UnsupportedMediaTypeException
 import io.ktor.http.*
 import io.ktor.util.KtorExperimentalAPI
+import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.R
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.User
@@ -32,6 +35,8 @@ class AuthenticationException : Exception()
 class AuthorizationException : Exception()
 class LockedException : Exception()
 
+data class ErrorMessage(val error: String)
+
 @KtorExperimentalAPI
 class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), NetworkService {
     private val client = HttpClient {
@@ -47,6 +52,13 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 when (status) {
                     HttpStatusCode.Unauthorized -> throw AuthenticationException()
+                    HttpStatusCode.BadRequest -> {
+                        val message = Gson().fromJson(
+                            response.content.readUTF8Line()!!,
+                            ErrorMessage::class.java
+                        )
+                        throw BadRequestException(message.error)
+                    }
                     HttpStatusCode.Forbidden -> throw AuthorizationException()
                     HttpStatusCode.Locked -> throw LockedException()
                     HttpStatusCode.UnsupportedMediaType ->
@@ -186,6 +198,29 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         }
     }
 
+    override fun registrate(
+        username: String,
+        login: String,
+        password: String,
+        dataHandler: (token: String?, message: String?) -> Unit
+    ) {
+        launch(Dispatchers.IO) {
+            val request = User.RegistrationRequestDto(username, login, password)
+
+            try {
+                val response = client.post<User.AuthenticationResponseDto> {
+                    url(REGISTRATION.route)
+                    contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
+                    body = Gson().toJsonTree(request)
+                }
+
+                withContext(Dispatchers.Main) { dataHandler(response.token, null) }
+            } catch (cause: BadRequestException) {
+                withContext(Dispatchers.Main) { dataHandler(null, cause.message) }
+            }
+        }
+    }
+
     override fun authenticate(login: String, password: String, dataHandler: (token: String?) -> Unit) {
         launch(Dispatchers.IO) {
             val request = User.AuthenticationRequestDto(login, password)
@@ -216,6 +251,5 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
     override fun cancellation() {
         cancel()
-        //client.close()
     }
 }
