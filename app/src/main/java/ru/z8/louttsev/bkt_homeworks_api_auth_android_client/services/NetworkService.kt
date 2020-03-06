@@ -10,19 +10,26 @@ import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI.*
 import java.util.*
 
 interface NetworkService {
-    fun fetchAdapterData(dataHandler: (posts: List<Post>, ads: List<AdsPost>) -> Unit)
-    fun updatePosts(currentCounter: Int, dataHandler: (posts: List<Post>) -> Unit)
-    fun updateAds(currentCounter: Int, dataHandler: (ads: List<AdsPost>) -> Unit)
-    fun savePost(post: Post, completionListener: () -> Unit)
-    fun saveMedia(mediaUri: Uri, context: Context, dataHandler: (permanentUrl: String) -> Unit)
-    fun updateSocial(postID: UUID, action: SocialAction, mode: Mode)
-    fun loadMedia(mediaUrl: String, dataHandler: (image: Bitmap) -> Unit)
+    fun fetchAdapterData(dataHandler: (posts: List<Post>?, ads: List<AdsPost>?) -> Unit)
+    fun updatePosts(currentCounter: Int, dataHandler: (posts: List<Post>?) -> Unit)
+    fun updateAds(currentCounter: Int, dataHandler: (ads: List<AdsPost>?) -> Unit)
+    fun savePost(post: Post, completionListener: (successfully: Boolean) -> Unit)
+    fun saveMedia(
+        mediaUri: Uri,
+        context: Context,
+        dataHandler: (permanentUrl: String?, cause: Throwable?) -> Unit)
+    fun updateSocial(
+        postID: UUID,
+        action: SocialAction,
+        mode: Mode,
+        completionListener: (cause: Throwable?) -> Unit)
+    fun loadMedia(mediaUrl: String, dataHandler: (image: Bitmap?) -> Unit)
     fun registrate(
         username: String,
         login: String,
         password: String,
         dataHandler: (token: String?, message: String?) -> Unit)
     fun authenticate(login: String, password: String, dataHandler: (token: String?) -> Unit)
-    fun getMe(dataHandler: (user: User) -> Unit)
+    fun getMe(dataHandler: (user: User?) -> Unit)
     fun cancellation()
 }

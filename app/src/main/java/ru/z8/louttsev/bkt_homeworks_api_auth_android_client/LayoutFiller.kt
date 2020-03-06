@@ -5,12 +5,15 @@ import android.view.View
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.post_card_layout.view.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.AuthorizationException
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.LockedException
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI
 
 @KtorExperimentalAPI
@@ -25,22 +28,50 @@ class LayoutFiller(private val adapter: PostAdapter) {
                 val thisPost: Post = repository.getPostByPosition(view.tag as Int)
 
                 if ((view as CheckBox).isChecked) {
-                    thisPost.like()
                     networkService.updateSocial(
                         thisPost.id,
                         SchemaAPI.SocialAction.LIKE,
                         SchemaAPI.Mode.POST
-                    )
+                    ) {
+                        when (it) {
+                            is AuthorizationException ->
+                                (context as MainActivity).handleAuthorizationException()
+                            is LockedException -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.locked_error_message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            null -> {
+                                thisPost.like()
+                                updateSocialCountView(thisPost.likes, thisPost.liked, likesCountTv)
+                            }
+                        }
+                    }
                 } else {
-                    thisPost.dislike()
                     networkService.updateSocial(
                         thisPost.id,
                         SchemaAPI.SocialAction.LIKE,
                         SchemaAPI.Mode.DELETE
-                    )
+                    ) {
+                        when (it) {
+                            is AuthorizationException ->
+                                (context as MainActivity).handleAuthorizationException()
+                            is LockedException -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.locked_error_message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            null -> {
+                                thisPost.dislike()
+                                updateSocialCountView(thisPost.likes, thisPost.liked, likesCountTv)
+                            }
+                        }
+                    }
                 }
-
-                updateSocialCountView(thisPost.likes, thisPost.liked, likesCountTv)
             }
 
             commentCb.isChecked = post.commented
@@ -52,22 +83,50 @@ class LayoutFiller(private val adapter: PostAdapter) {
 
                 if ((view as CheckBox).isChecked) {
                     //TODO: implement get comment text, its processing and display
-                    thisPost.makeComment()
                     networkService.updateSocial(
                         thisPost.id,
                         SchemaAPI.SocialAction.COMMENT,
                         SchemaAPI.Mode.POST
-                    )
+                    ) {
+                        when (it) {
+                            is AuthorizationException ->
+                                (context as MainActivity).handleAuthorizationException()
+                            is LockedException -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.locked_error_message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            null -> {
+                                thisPost.makeComment()
+                                updateSocialCountView(thisPost.comments, thisPost.commented, commentsCountTv)
+                            }
+                        }
+                    }
                 } else {
-                    thisPost.removeComment()
                     networkService.updateSocial(
                         thisPost.id,
                         SchemaAPI.SocialAction.COMMENT,
                         SchemaAPI.Mode.DELETE
-                    )
+                    ) {
+                        when (it) {
+                            is AuthorizationException ->
+                                (context as MainActivity).handleAuthorizationException()
+                            is LockedException -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.locked_error_message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            null -> {
+                                thisPost.removeComment()
+                                updateSocialCountView(thisPost.comments, thisPost.commented, commentsCountTv)
+                            }
+                        }
+                    }
                 }
-
-                updateSocialCountView(thisPost.comments, thisPost.commented, commentsCountTv)
             }
 
             shareCb.isChecked = post.shared
@@ -78,32 +137,60 @@ class LayoutFiller(private val adapter: PostAdapter) {
                 val thisPost: Post = repository.getPostByPosition(view.tag as Int)
 
                 if ((view as CheckBox).isChecked) {
-                    thisPost.share(context)
                     networkService.updateSocial(
                         thisPost.id,
                         SchemaAPI.SocialAction.SHARE,
                         SchemaAPI.Mode.POST
-                    )
-                    // temporarily reposting
-                    (context as MainActivity)
-                        .prepareNewRepostBody(
-                            Repost(author = "Netology", source = thisPost.id),
-                            view,
-                            sharesCountTv
-                        )
+                    ) {
+                        when (it) {
+                            is AuthorizationException ->
+                                (context as MainActivity).handleAuthorizationException()
+                            is LockedException -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.locked_error_message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            null -> {
+                                thisPost.share(context)
+                                // temporarily reposting
+                                (context as MainActivity)
+                                    .prepareNewRepostBody(
+                                        Repost(author = myself!!.username, source = thisPost.id),
+                                        view,
+                                        sharesCountTv
+                                    )
+                                updateSocialCountView(thisPost.shares, thisPost.shared, sharesCountTv)
+                            }
+                        }
+                    }
                 } else {
                     shareCb.isChecked = post.shared // temporarily enabled
                     /* temporarily disabled
-                    thisPost.removeShare()
                     networkService.updateSocial(
                         thisPost.id,
                         SchemaAPI.SocialAction.SHARE,
                         SchemaAPI.Mode.POST
-                    )*/
-                    //TODO: implement find and delete repost
+                    ) {
+                        when (it) {
+                            is AuthorizationException ->
+                                (context as MainActivity).handleAuthorizationException()
+                            is LockedException -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.locked_error_message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            null -> {
+                                //TODO: implement find and delete repost
+                                thisPost.removeShare()
+                                updateSocialCountView(thisPost.shares, thisPost.shared, sharesCountTv)
+                            }
+                        }
+                    }*/
                 }
-
-                updateSocialCountView(thisPost.shares, thisPost.shared, sharesCountTv)
             }
 
             hideBtn.tag = positionTag
@@ -229,6 +316,8 @@ class LayoutFiller(private val adapter: PostAdapter) {
         }
 
         networkService.loadMedia(mediaUrl) {
+            if (it == null) (imageView.context as MainActivity).handleAuthorizationException()
+
             imageView.setImageBitmap(it)
         }
     }

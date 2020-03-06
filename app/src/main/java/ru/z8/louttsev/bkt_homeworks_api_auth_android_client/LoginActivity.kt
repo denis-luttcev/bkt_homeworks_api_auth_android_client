@@ -73,7 +73,7 @@ class LoginActivity : AppCompatActivity() {
         mytoken = token
 
         networkService.getMe { user ->
-            myself = user
+            myself = user // nullable ignored
 
             startActivity(Intent(this@LoginActivity, MainActivity::class.java))
             finish()

@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
 import androidx.recyclerview.widget.LinearLayoutManager
+import io.ktor.features.UnsupportedMediaTypeException
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.new_post_layout.*
@@ -19,6 +20,8 @@ import kotlinx.android.synthetic.main.new_post_layout.view.*
 import kotlinx.android.synthetic.main.post_card_layout.view.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.*
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.parseVideoUrl
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.AuthorizationException
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.LockedException
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI.*
 
 private const val GALLERY_REQUEST = 100
@@ -36,10 +39,15 @@ class MainActivity : AppCompatActivity() {
 
         swipeContainer.setOnRefreshListener {
             networkService.updateAds(repository.getAdsCount()) {
-                repository.addAds(it)
+                if (it != null) {
+                    repository.addAds(it)
+
+                } else {
+                    handleAuthorizationException()
+                }
             }
 
-            updatePostsInAdapter()
+            updatePostsInAdapter(true)
         }
 
         prepareNewTextPostBody()
@@ -52,13 +60,19 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
 
         swipeContainer.isRefreshing = true
-        networkService.fetchAdapterData { posts: List<Post>, ads: List<AdsPost> ->
-            repository.addPosts(posts)
-            repository.addAds(ads)
 
-            postAdapter.notifyDataSetChanged()
+        networkService.fetchAdapterData { posts: List<Post>?, ads: List<AdsPost>? ->
+            if (posts != null && ads != null) {
+                repository.addPosts(posts)
+                repository.addAds(ads)
 
-            swipeContainer.isRefreshing = false
+                postAdapter.notifyDataSetChanged()
+
+                swipeContainer.isRefreshing = false
+
+            } else {
+                handleAuthorizationException()
+            }
         }
     }
 
@@ -68,15 +82,38 @@ class MainActivity : AppCompatActivity() {
         networkService.cancellation()
     }*/
 
-    private fun updatePostsInAdapter() {
+    fun handleAuthorizationException() {
+        Toast.makeText(
+            this,
+            getString(R.string.authorization_error_message),
+            Toast.LENGTH_SHORT
+        ).show()
+
+        swipeContainer.isRefreshing = false
+
+        startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+        finish()
+    }
+
+    private fun updatePostsInAdapter(successfully: Boolean) {
+        if (!successfully) {
+            handleAuthorizationException()
+            return
+        }
+
         swipeContainer.isRefreshing = true
         networkService.updatePosts(repository.getPostsCount()) {
-            repository.addPosts(it)
-            postAdapter.notifyDataSetChanged()
+            if (it != null) {
+                repository.addPosts(it)
+                postAdapter.notifyDataSetChanged()
 
-            postListing.smoothScrollToPosition(0)
+                postListing.smoothScrollToPosition(0)
 
-            swipeContainer.isRefreshing = false
+                swipeContainer.isRefreshing = false
+
+            } else {
+                handleAuthorizationException()
+            }
         }
     }
 
@@ -96,7 +133,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val post = TextPost(author = "Netology", content = content)
+            val post = TextPost(author = myself!!.username, content = content)
 
             networkService.savePost(post, ::updatePostsInAdapter)
 
@@ -188,7 +225,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val post = ImagePost(author = "Netology", content = content, imageUrl = imageUrl)
+            val post = ImagePost(author = myself!!.username, content = content, imageUrl = imageUrl)
 
             networkService.savePost(post, ::updatePostsInAdapter)
 
@@ -207,8 +244,32 @@ class MainActivity : AppCompatActivity() {
                     newGalleryBtn.visibility = View.GONE
                     newCameraBtn.visibility = View.GONE
 
-                    networkService.saveMedia(imageUri, this) {
-                        newPreviewIv.tag = it
+                    networkService.saveMedia(imageUri, this) { url: String?, cause: Throwable? ->
+                        if (url != null) {
+                            newPreviewIv.tag = url
+                        } else {
+                            when(cause) {
+                                is AuthorizationException -> handleAuthorizationException()
+                                is UnsupportedMediaTypeException -> {
+                                    Toast.makeText(
+                                        this,
+                                        R.string.unsupported_media_error_message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    prepareNewImagePostBody()
+                                }
+                                else -> {
+                                    Toast.makeText(
+                                        this,
+                                        R.string.load_error_message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    prepareNewImagePostBody()
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -242,7 +303,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val post = EventPost(author = "Netology", content = content, address = address)
+            val post = EventPost(author = myself!!.username, content = content, address = address)
 
             networkService.savePost(post, ::updatePostsInAdapter)
 
@@ -270,6 +331,8 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     networkService.loadMedia(parseVideoUrl(inputUrl)) {
+                        if (it == null) handleAuthorizationException()
+
                         newPreviewIv.setImageBitmap(it)
                     }
 
@@ -305,7 +368,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val post = VideoPost(author = "Netology", content = content, videoUrl = inputUrl)
+            val post = VideoPost(author = myself!!.username, content = content, videoUrl = inputUrl)
 
             networkService.savePost(post, ::updatePostsInAdapter)
 
@@ -391,13 +454,25 @@ class MainActivity : AppCompatActivity() {
                 if (post is Repost) {
                     val sharedPost = repository.getPostById(post.source!!)
 
-                    sharedPost.removeShare()
-                    networkService.updateSocial(post.source!!, SocialAction.SHARE, Mode.DELETE)
+                    networkService.updateSocial(post.source!!, SocialAction.SHARE, Mode.DELETE) {
+                        when (it) {
+                            is AuthorizationException -> handleAuthorizationException()
+                            is LockedException -> {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    R.string.locked_error_message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            null -> {
+                                sharedPost.removeShare()
+                                view!!.isChecked = false
 
-                    view!!.isChecked = false
-
-                    postAdapter.getLayoutFiller()
-                        .updateSocialCountView(sharedPost.shares, false, countView!!)
+                                postAdapter.getLayoutFiller()
+                                    .updateSocialCountView(sharedPost.shares, false, countView!!)
+                            }
+                        }
+                    }
                 }
 
                 prepareNewTextPostBody()

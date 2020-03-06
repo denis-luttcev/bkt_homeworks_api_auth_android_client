@@ -80,7 +80,7 @@ class RegistrationActivity : AppCompatActivity() {
         mytoken = token
 
         networkService.getMe { user ->
-            myself = user
+            myself = user // nullable ignored
 
             finish()
         }
