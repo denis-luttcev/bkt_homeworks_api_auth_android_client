@@ -37,6 +37,22 @@ class MainActivity : AppCompatActivity() {
         postListing.layoutManager = LinearLayoutManager(this)
         postListing.adapter = postAdapter
 
+        swipeContainer.isRefreshing = true
+
+        networkService.fetchAdapterData { posts: List<Post>?, ads: List<AdsPost>? ->
+            if (posts != null && ads != null) {
+                repository.addPosts(posts)
+                repository.addAds(ads)
+
+                postAdapter.notifyDataSetChanged()
+
+                swipeContainer.isRefreshing = false
+
+            } else {
+                handleAuthorizationException()
+            }
+        }
+
         swipeContainer.setOnRefreshListener {
             networkService.updateAds(repository.getAdsCount()) {
                 if (it != null) {
@@ -56,31 +72,11 @@ class MainActivity : AppCompatActivity() {
         currentUser.text = welcomeMessage
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        swipeContainer.isRefreshing = true
-
-        networkService.fetchAdapterData { posts: List<Post>?, ads: List<AdsPost>? ->
-            if (posts != null && ads != null) {
-                repository.addPosts(posts)
-                repository.addAds(ads)
-
-                postAdapter.notifyDataSetChanged()
-
-                swipeContainer.isRefreshing = false
-
-            } else {
-                handleAuthorizationException()
-            }
-        }
-    }
-
-    /*override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
 
         networkService.cancellation()
-    }*/
+    }
 
     fun handleAuthorizationException() {
         Toast.makeText(

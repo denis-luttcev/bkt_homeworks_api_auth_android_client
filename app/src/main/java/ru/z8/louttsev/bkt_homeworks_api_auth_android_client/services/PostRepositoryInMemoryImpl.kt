@@ -9,13 +9,11 @@ private const val ADS_RATIO = 3 //  next ads after each 3 posts
 
 class PostRepositoryInMemoryImpl : PostRepository {
     private val posts = mutableListOf<Post>()
-    private val index = mutableMapOf<UUID, Post>()
     private val ads = mutableListOf<AdsPost>()
     private val adsIterator = ads.circularIterator()
 
     override fun addPosts(posts: List<Post>) {
         this.posts.addAll(0, posts)
-        index.putAll(posts.map { it.id to it }.toMap().toMutableMap())
     }
 
     override fun addAds(ads: List<AdsPost>) {
@@ -44,12 +42,12 @@ class PostRepositoryInMemoryImpl : PostRepository {
 
     private fun isPostPosition(itemPosition: Int) = (itemPosition + 1) % (ADS_RATIO + 1) != 0
 
-    override fun getPostById(id: UUID) = index[id]!!
+    override fun getPostById(id: UUID) = posts.find { it.id == id }!!
 
     override fun getPostByPosition(position: Int): Post = posts[position]
 
     override fun findRepostSource(post: Repost): Post {
-        val sourcePost = index.getValue(post.source!!)
+        val sourcePost = getPostById(post.source!!)
 
         return if (sourcePost !is Repost) sourcePost else findRepostSource(sourcePost)
     }

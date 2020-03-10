@@ -22,13 +22,13 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    /*override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
 
         if (mytoken == null) {
             networkService.cancellation()
         }
-    }*/
+    }
 
     override fun onStart() {
         super.onStart()

@@ -45,7 +45,7 @@ class RegistrationActivity : AppCompatActivity() {
             return
         }
 
-        if (!password.equals(passwordConfirmation)) {
+        if (password != passwordConfirmation) {
             Toast.makeText(
                 this,
                 getString(R.string.password_confirmation_error_message),
