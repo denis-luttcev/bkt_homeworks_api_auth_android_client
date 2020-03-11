@@ -309,6 +309,16 @@ class LayoutFiller(private val adapter: PostAdapter) {
 
                 else -> {} // ignored
             }
+
+            if (post.isMy) {
+                //TODO: replace hide button to delete/edit buttons and clear background
+                this.setBackgroundColor(
+                    ContextCompat.getColor(
+                        context,
+                        R.color.colorMyPostBackground
+                    )
+                )
+            }
         }
     }
 

@@ -9,5 +9,6 @@
     <color name="colorSecondaryText">#999999</color>
     <color name="colorSelected">#FF0000</color>
     <color name="colorAdsBackground">#FFFFDC</color>
+    <color name="colorMyPostBackground">#E4FFDC</color>
     <color name="colorNewPostBackground">#C4FFF4</color>
 </resources>
