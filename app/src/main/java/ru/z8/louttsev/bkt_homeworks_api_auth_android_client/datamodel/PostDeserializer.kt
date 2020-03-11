@@ -29,6 +29,7 @@ class PostDeserializer : JsonDeserializer<Post> {
             isMy = data.get("isMy").asBoolean
             content = data.get("content").asString
             created = data.get("created").asLong
+            isHide = data.get("isHide").asBoolean
             liked = data.get("liked").asBoolean
             likes = data.get("likes").asInt
             commented = data.get("commented").asBoolean

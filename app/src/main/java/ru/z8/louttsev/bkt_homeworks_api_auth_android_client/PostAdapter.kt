@@ -1,6 +1,5 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

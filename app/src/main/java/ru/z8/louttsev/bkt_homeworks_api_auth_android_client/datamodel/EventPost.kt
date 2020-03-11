@@ -9,6 +9,7 @@ class EventPost(
     id : UUID = UUID.randomUUID(),
     author : String = "",
     isMy: Boolean = false,
+    isHide: Boolean = false,
     content : String = "",
     created : Long = System.currentTimeMillis(), // in millis
     liked : Boolean = false,
@@ -20,7 +21,7 @@ class EventPost(
     views : Int = 0,
     var address : String = "",
     var location : Location = Location()
-) : Post(id, Type.EVENT, author, isMy, content, created, liked, likes, commented, comments, shared, shares, views)
+) : Post(id, Type.EVENT, author, isMy, isHide, content, created, liked, likes, commented, comments, shared, shares, views)
 {
     class RequestDto(model: EventPost) : Post.RequestDto(model) {
         val address: String = model.address

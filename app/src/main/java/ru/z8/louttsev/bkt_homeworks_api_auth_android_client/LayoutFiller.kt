@@ -197,9 +197,27 @@ class LayoutFiller(private val adapter: PostAdapter) {
             hideBtn.setOnClickListener { view: View ->
                 val thisPost: Post = repository.getPostByPosition(view.tag as Int)
 
-                repository.removePost(thisPost)
-
-                adapter.notifyDataSetChanged()
+                networkService.updateSocial(
+                    thisPost.id,
+                    SchemaAPI.SocialAction.HIDE,
+                    SchemaAPI.Mode.POST
+                ) {
+                    when (it) {
+                        is AuthorizationException ->
+                            (context as MainActivity).handleAuthorizationException()
+                        is LockedException -> {
+                            Toast.makeText(
+                                context,
+                                R.string.locked_error_message,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        null -> {
+                            repository.hidePost(thisPost)
+                            adapter.notifyDataSetChanged()
+                        }
+                    }
+                }
             }
         }
     }

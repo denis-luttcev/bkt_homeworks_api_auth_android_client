@@ -9,6 +9,7 @@ abstract class Post(
     val type : Type,
     var author : String,
     var isMy: Boolean,
+    var isHide: Boolean,
     var content : String,
     var created : Long = System.currentTimeMillis(), // in millis
     var liked : Boolean = false,
@@ -94,6 +95,10 @@ abstract class Post(
         if (hours > 0) return "${getHoursString(hours)} назад"
         if (minutes > 0) return "${getMinutesString(minutes)} назад"
         return "менее минуты назад"
+    }
+
+    fun hide() {
+        isHide = true
     }
 
     fun like() {

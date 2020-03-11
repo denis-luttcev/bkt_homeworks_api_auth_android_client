@@ -7,6 +7,7 @@ class TextPost(
     id : UUID = UUID.randomUUID(),
     author : String = "",
     isMy: Boolean = false,
+    isHide: Boolean = false,
     content : String = "",
     created : Long = System.currentTimeMillis(), // in millis
     liked : Boolean = false,
@@ -16,7 +17,7 @@ class TextPost(
     shared : Boolean = false,
     shares : Int = 0,
     views : Int = 0
-) : Post(id, Type.TEXT, author, isMy, content, created, liked, likes, commented, comments, shared, shares, views)
+) : Post(id, Type.TEXT, author, isMy, isHide, content, created, liked, likes, commented, comments, shared, shares, views)
 {
     class RequestDto(model: TextPost) : Post.RequestDto(model)
 

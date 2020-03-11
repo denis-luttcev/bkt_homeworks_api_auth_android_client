@@ -23,7 +23,8 @@ enum class SchemaAPI(val route: String) {
     enum class SocialAction(private val action: String) {
         LIKE("like"),
         COMMENT("comment"),
-        SHARE("share");
+        SHARE("share"),
+        HIDE("hide");
 
         override fun toString(): String {
             return action

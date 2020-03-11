@@ -7,6 +7,7 @@ class Repost(
     id : UUID = UUID.randomUUID(),
     author : String = "",
     isMy: Boolean = false,
+    isHide: Boolean = false,
     content : String = "",
     created : Long = System.currentTimeMillis(), // in millis
     liked : Boolean = false,
@@ -17,7 +18,7 @@ class Repost(
     shares : Int = 0,
     views : Int = 0,
     var source : UUID? = null
-) : Post(id, Type.REPOST, author, isMy, content, created, liked, likes, commented, comments, shared, shares, views)
+) : Post(id, Type.REPOST, author, isMy, isHide, content, created, liked, likes, commented, comments, shared, shares, views)
 {
     class RequestDto(model: Repost) : Post.RequestDto(model) {
         val source: UUID? = model.source
