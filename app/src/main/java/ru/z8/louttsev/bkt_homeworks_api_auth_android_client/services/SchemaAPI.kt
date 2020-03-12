@@ -14,6 +14,8 @@ enum class SchemaAPI(val route: String) {
 
     fun routeWith(count: Int) = this.route + "/${count}"
 
+    fun routeWith(postID: UUID) = this.route + "/${postID}"
+
     fun routeWith(postID: UUID, action: SocialAction) = this.route + "/${postID}" + "/${action}"
 
     enum class Mode {

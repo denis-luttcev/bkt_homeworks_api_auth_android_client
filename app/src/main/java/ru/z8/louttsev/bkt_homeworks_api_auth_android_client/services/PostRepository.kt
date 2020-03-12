@@ -17,4 +17,5 @@ interface PostRepository {
     fun getPostPosition(itemPosition: Int) : Int
     fun findRepostSource(post: Repost): Post
     fun hidePost(post: Post)
+    fun deletePost(post: Post)
 }

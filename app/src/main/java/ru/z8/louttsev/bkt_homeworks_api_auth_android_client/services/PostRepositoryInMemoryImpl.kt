@@ -71,6 +71,10 @@ class PostRepositoryInMemoryImpl : PostRepository {
         posts.remove(post)
         hiddenPosts.add(post)
     }
+
+    override fun deletePost(post: Post) {
+        posts.remove(post)
+    }
 }
 
 

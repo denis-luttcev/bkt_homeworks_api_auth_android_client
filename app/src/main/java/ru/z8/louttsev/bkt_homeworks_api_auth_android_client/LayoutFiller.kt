@@ -229,6 +229,21 @@ class LayoutFiller(private val adapter: PostAdapter) {
                     }
                 }
             }
+
+            deleteBtn.tag = positionTag
+            deleteBtn.setOnClickListener { view: View ->
+                val thisPost: Post = repository.getPostByPosition(view.tag as Int)
+
+                networkService.deletePost(thisPost.id) {
+                    if (!it) {
+                        (context as MainActivity).handleAuthorizationException()
+                        return@deletePost
+                    }
+
+                    repository.deletePost(thisPost)
+                    adapter.notifyDataSetChanged()
+                }
+            }
         }
     }
 

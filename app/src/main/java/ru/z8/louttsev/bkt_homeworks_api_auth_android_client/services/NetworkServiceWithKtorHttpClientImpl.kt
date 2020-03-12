@@ -138,6 +138,21 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         }
     }
 
+    override fun deletePost(postID: UUID, completionListener: (successfully: Boolean) -> Unit) {
+        launch(Dispatchers.IO) {
+            try {
+                client.delete<String>(POSTS.routeWith(postID)) {
+                    header(HttpHeaders.Authorization, "Bearer $mytoken")
+                }
+
+                withContext(Dispatchers.Main) { completionListener(true) }
+
+            } catch (cause: AuthorizationException) {
+                withContext(Dispatchers.Main) { completionListener(false) }
+            }
+        }
+    }
+
     override fun saveMedia(
         mediaUri: Uri,
         context: Context,
