@@ -137,24 +137,48 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/likeCb" />
 
+    <Button
+        android:id="@+id/deleteBtn"
+        style="@android:style/Widget.Holo.Light.Button.Borderless.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:text="@string/delete"
+        android:textColor="@android:color/holo_blue_light"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/likeCb"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/likeCb" />
+
+    <Button
+        android:id="@+id/editBtn"
+        style="@android:style/Widget.Holo.Light.Button.Borderless.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:text="@string/edit"
+        android:textColor="@android:color/holo_blue_light"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/likeCb"
+        app:layout_constraintStart_toEndOf="@id/deleteBtn"
+        app:layout_constraintTop_toTopOf="@+id/likeCb" />
+
     <ImageView
         android:id="@+id/viewsIv"
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        app:layout_constraintBottom_toBottomOf="@+id/hideBtn"
-        app:layout_constraintStart_toEndOf="@+id/hideBtn"
-        app:layout_constraintTop_toTopOf="@+id/hideBtn"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintEnd_toStartOf="@+id/viewsCountTv"
+        app:layout_constraintTop_toTopOf="@id/likeCb"
         app:srcCompat="@drawable/ic_views" />
 
     <TextView
         android:id="@+id/viewsCountTv"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginEnd="16dp"
         android:textColor="@color/colorSecondaryText"
         app:layout_constraintBottom_toBottomOf="@+id/likesCountTv"
-        app:layout_constraintStart_toEndOf="@+id/viewsIv"
+        app:layout_constraintEnd_toStartOf="@+id/likeCb"
         app:layout_constraintTop_toTopOf="@+id/likesCountTv"
         tools:text="10" />
 
@@ -171,7 +195,7 @@
         android:id="@+id/likesCountTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="16dp"
         android:textColor="@color/colorSecondaryText"
         app:layout_constraintBaseline_toBaselineOf="@id/likeCb"
         app:layout_constraintEnd_toStartOf="@+id/commentCb"
@@ -190,7 +214,7 @@
         android:id="@+id/commentsCountTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="16dp"
         android:textColor="@color/colorSecondaryText"
         app:layout_constraintBaseline_toBaselineOf="@id/commentCb"
         app:layout_constraintEnd_toStartOf="@+id/shareCb"

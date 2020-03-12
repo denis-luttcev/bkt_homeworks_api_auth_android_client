@@ -193,6 +193,16 @@ class LayoutFiller(private val adapter: PostAdapter) {
                 }
             }
 
+            if (post.isMy) {
+                hideBtn.visibility = View.GONE
+                deleteBtn.visibility = View.VISIBLE
+                editBtn.visibility = View.VISIBLE
+            } else {
+                hideBtn.visibility = View.VISIBLE
+                deleteBtn.visibility = View.GONE
+                editBtn.visibility = View.GONE
+            }
+
             hideBtn.tag = positionTag
             hideBtn.setOnClickListener { view: View ->
                 val thisPost: Post = repository.getPostByPosition(view.tag as Int)
@@ -308,16 +318,6 @@ class LayoutFiller(private val adapter: PostAdapter) {
                 }
 
                 else -> {} // ignored
-            }
-
-            if (post.isMy) {
-                //TODO: replace hide button to delete/edit buttons and clear background
-                this.setBackgroundColor(
-                    ContextCompat.getColor(
-                        context,
-                        R.color.colorMyPostBackground
-                    )
-                )
             }
         }
     }
