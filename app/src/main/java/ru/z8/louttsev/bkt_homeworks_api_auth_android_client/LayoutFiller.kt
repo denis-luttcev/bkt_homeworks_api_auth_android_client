@@ -18,6 +18,7 @@ import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI
 
 @KtorExperimentalAPI
 class LayoutFiller(private val adapter: PostAdapter) {
+
     fun initPostCardLayout(itemView: View, post: Post, positionTag: Int) {
         with(itemView) {
             likeCb.isChecked = post.liked
@@ -240,9 +241,19 @@ class LayoutFiller(private val adapter: PostAdapter) {
                         return@deletePost
                     }
 
+                    //TODO: handle case delete post which is source of repost...???
+
                     repository.deletePost(thisPost)
                     adapter.notifyDataSetChanged()
                 }
+            }
+
+            editBtn.tag = positionTag
+            editBtn.setOnClickListener { view: View ->
+                val position = view.tag as Int
+                val thisPost: Post = repository.getPostByPosition(position)
+
+                (context as MainActivity).prepareEditPostBody(thisPost, position)
             }
         }
     }

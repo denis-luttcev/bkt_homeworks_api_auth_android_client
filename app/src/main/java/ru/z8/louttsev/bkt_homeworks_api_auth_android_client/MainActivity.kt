@@ -311,37 +311,7 @@ class MainActivity : AppCompatActivity() {
         clearNewPostBody()
 
         newVideoUrlEt.visibility = View.VISIBLE
-        newVideoUrlEt.setOnFocusChangeListener { _, focused ->
-            if (!focused) {
-                if (videoBtn.isChecked) {
-
-                    val inputUrl = newVideoUrlEt.text.toString()
-                    if (isNotYouTubeUrl(inputUrl)) {
-                        Toast.makeText(
-                            this,
-                            R.string.video_url_error_message,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        newVideoUrlEt.text.clear()
-                        return@setOnFocusChangeListener
-                    }
-
-                    networkService.loadMedia(parseVideoUrl(inputUrl)) {
-                        if (it == null) handleAuthorizationException()
-
-                        newPreviewIv.setImageBitmap(it)
-                    }
-
-                    newPreviewIv.visibility = View.VISIBLE
-                    newPlayBtn.visibility = View.VISIBLE
-                    newVideoUrlEt.visibility = View.GONE
-
-                } else {
-                    newVideoUrlEt.text.clear()
-                    newVideoUrlEt.visibility = View.GONE
-                }
-            }
-        }
+        newVideoUrlEt.setOnFocusChangeListener(::handleVideoUrl)
 
         sendBtn.setOnClickListener {
             val content = newContentTv.text.toString()
@@ -372,18 +342,47 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleVideoUrl(view: View, focused: Boolean) {
+        if (!focused) {
+            if (videoBtn.isChecked) {
+
+                val inputUrl = newVideoUrlEt.text.toString()
+                if (isNotYouTubeUrl(inputUrl)) {
+                    Toast.makeText(
+                        this,
+                        R.string.video_url_error_message,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    newVideoUrlEt.text.clear()
+                    return
+                }
+
+                networkService.loadMedia(parseVideoUrl(inputUrl)) {
+                    if (it == null) handleAuthorizationException()
+
+                    newPreviewIv.setImageBitmap(it)
+                }
+
+                newPreviewIv.visibility = View.VISIBLE
+                newPlayBtn.visibility = View.VISIBLE
+                newVideoUrlEt.visibility = View.GONE
+
+            } else {
+                newVideoUrlEt.text.clear()
+                newVideoUrlEt.visibility = View.GONE
+            }
+        }
+    }
+
     private fun isNotYouTubeUrl(inputUrl: String)
             = !inputUrl.contains("https://www.youtube.com/watch?v=")
 
     fun prepareNewRepostBody(post: Post, view: CheckBox?, countView: TextView?) {
         with(newPostLayout) {
 
-            this.background = getDrawable(R.drawable.rounded_block)
-
             typeGrp.visibility = View.GONE
 
             when (post) {
-
                 is EventPost -> {
                     newLocationGrp.visibility = View.VISIBLE
                     newAddressEt.setText(post.address)
@@ -474,5 +473,178 @@ class MainActivity : AppCompatActivity() {
                 prepareNewTextPostBody()
             }
         }
+    }
+
+    fun prepareEditPostBody(post: Post, position: Int) {
+        with(newPostLayout) {
+            clearNewPostBody()
+            typeGrp.visibility = View.GONE
+
+            newContentTv.setText(post.content)
+
+            when (post) {
+                is TextPost -> {
+                    sendBtn.setOnClickListener {
+                        val content = newContentTv.text.toString()
+                        if (content.isEmpty() || content.isBlank()) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                R.string.new_post_hint,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@setOnClickListener
+                        }
+
+                        post.content = content
+                        update(post, position)
+                    }
+                }
+
+                is EventPost -> {
+                    newLocationGrp.visibility = View.VISIBLE
+
+                    newAddressEt.setText(post.address)
+
+                    sendBtn.setOnClickListener {
+                        val content = newContentTv.text.toString()
+                        if (content.isEmpty() || content.isBlank()) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                R.string.new_post_hint,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@setOnClickListener
+                        }
+
+                        val address = newAddressEt.text.toString()
+                        if (address.isEmpty() || address.isBlank()) {
+                            Toast.makeText(this@MainActivity,
+                                R.string.event_address_error_message,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@setOnClickListener
+                        }
+
+                        post.content = content
+                        post.address = address
+                        update(post, position)
+                    }
+                }
+
+                is VideoPost -> {
+                    newPreviewIv.visibility = View.VISIBLE
+                    newPlayBtn.visibility = View.VISIBLE
+
+                    postAdapter.getLayoutFiller().updateImageView(post, newPreviewIv)
+
+                    //TODO: refill videoUrl EditText
+
+                    newVideoUrlEt.setOnFocusChangeListener(::handleVideoUrl)
+
+                    sendBtn.setOnClickListener {
+                        val content = newContentTv.text.toString()
+                        if (content.isEmpty() || content.isBlank()) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                R.string.new_post_hint,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@setOnClickListener
+                        }
+
+                        val inputUrl = newVideoUrlEt.text.toString()
+                        if (isNotYouTubeUrl(inputUrl)) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                R.string.new_post_hint,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@setOnClickListener
+                        }
+
+                        post.content = content
+                        post.videoUrl = inputUrl
+                        update(post, position)
+                    }
+                }
+
+                is Repost -> {
+                    newContainerFl.visibility = View.VISIBLE
+
+                    val repostView = LayoutInflater.from(context)
+                        .inflate(R.layout.repost_layout, containerFl, false)
+                    postAdapter.getLayoutFiller()
+                        .initPostView(
+                            repostView as ConstraintLayout,
+                            repository.findRepostSource(post)
+                        )
+
+                    repostView.findViewById<Group>(R.id.socialGrp).visibility = View.GONE
+                    repostView.adsTv.visibility = View.GONE
+
+                    newContainerFl.addView(repostView)
+
+                    sendBtn.setOnClickListener {
+                        val content = newContentTv.text.toString()
+                        if (content.isEmpty() || content.isBlank()) {
+                            post.content = getString(R.string.repost_text_default) // default content
+                        } else {
+                            post.content = content
+                        }
+
+                        post.content = content
+                        update(post, position)
+                    }
+                }
+
+                is ImagePost -> {
+                    newPreviewIv.visibility = View.VISIBLE
+                    newPlayBtn.visibility = View.GONE
+
+                    postAdapter.getLayoutFiller().updateImageView(post, newPreviewIv)
+
+                    //TODO: show sources buttons
+
+                    sendBtn.setOnClickListener {
+                        val content = newContentTv.text.toString()
+                        if (content.isEmpty() || content.isBlank()) {
+                            Toast.makeText(this@MainActivity,
+                                R.string.new_post_hint,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@setOnClickListener
+                        }
+
+                        val imageUrl = newPreviewIv.tag.toString()
+                        if (imageUrl.isEmpty() || imageUrl.isBlank()) {
+                            Toast.makeText(this@MainActivity,
+                                R.string.image_uri_error_message,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@setOnClickListener
+                        }
+
+                        post.content = content
+                        post.imageUrl = imageUrl
+                        update(post, position)
+                    }
+                }
+
+                else -> {} // ignored
+            }
+
+            cancelBtn.setOnClickListener {
+                prepareNewTextPostBody()
+            }
+        }
+    }
+
+    private fun update(post: Post, position: Int) {
+        //TODO: implement update request
+        //networkService.savePost(post, ::updatePostsInAdapter)
+
+        postAdapter.notifyItemChanged(position)
+        postListing.smoothScrollToPosition(position)
+        prepareNewTextPostBody()
     }
 }
