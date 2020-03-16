@@ -1,5 +1,6 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -34,8 +35,7 @@ class LoginActivity : AppCompatActivity() {
         super.onStart()
 
         if (mytoken != null) {
-            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-            finish()
+            getUserAndStartMainActivity()
         }
     }
 
@@ -71,7 +71,12 @@ class LoginActivity : AppCompatActivity() {
         }
 
         mytoken = token
+        getSharedPreferences(SECURITY, Context.MODE_PRIVATE).edit().putString(TOKEN, mytoken).apply()
 
+        getUserAndStartMainActivity()
+    }
+
+    private fun getUserAndStartMainActivity() {
         networkService.getMe { user ->
             myself = user // nullable ignored
 
