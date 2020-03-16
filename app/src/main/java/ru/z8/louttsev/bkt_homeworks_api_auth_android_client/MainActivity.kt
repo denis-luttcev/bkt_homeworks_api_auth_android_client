@@ -643,7 +643,7 @@ class MainActivity : AppCompatActivity() {
         //TODO: implement update request
         //networkService.savePost(post, ::updatePostsInAdapter)
 
-        postAdapter.notifyItemChanged(position)
+        postAdapter.notifyDataSetChanged()
         postListing.smoothScrollToPosition(position)
         prepareNewTextPostBody()
     }
