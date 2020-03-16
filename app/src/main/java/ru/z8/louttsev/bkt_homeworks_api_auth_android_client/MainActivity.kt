@@ -346,22 +346,7 @@ class MainActivity : AppCompatActivity() {
         if (!focused) {
             if (videoBtn.isChecked) {
 
-                val inputUrl = newVideoUrlEt.text.toString()
-                if (isNotYouTubeUrl(inputUrl)) {
-                    Toast.makeText(
-                        this,
-                        R.string.video_url_error_message,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    newVideoUrlEt.text.clear()
-                    return
-                }
-
-                networkService.loadMedia(parseVideoUrl(inputUrl)) {
-                    if (it == null) handleAuthorizationException()
-
-                    newPreviewIv.setImageBitmap(it)
-                }
+                if (!updateVideoPreview()) return
 
                 newPreviewIv.visibility = View.VISIBLE
                 newPlayBtn.visibility = View.VISIBLE
@@ -372,6 +357,28 @@ class MainActivity : AppCompatActivity() {
                 newVideoUrlEt.visibility = View.GONE
             }
         }
+    }
+
+    private fun updateVideoPreview(): Boolean {
+        val inputUrl = newVideoUrlEt.text.toString()
+
+        if (isNotYouTubeUrl(inputUrl)) {
+            Toast.makeText(
+                this,
+                R.string.video_url_error_message,
+                Toast.LENGTH_SHORT
+            ).show()
+            newVideoUrlEt.text.clear()
+            return false
+        }
+
+        networkService.loadMedia(parseVideoUrl(inputUrl)) {
+            if (it == null) handleAuthorizationException()
+
+            newPreviewIv.setImageBitmap(it)
+        }
+
+        return true
     }
 
     private fun isNotYouTubeUrl(inputUrl: String)
@@ -534,12 +541,14 @@ class MainActivity : AppCompatActivity() {
                 is VideoPost -> {
                     newPreviewIv.visibility = View.VISIBLE
                     newPlayBtn.visibility = View.VISIBLE
+                    newVideoUrlEt.visibility = View.VISIBLE
 
                     postAdapter.getLayoutFiller().updateImageView(post, newPreviewIv)
+                    newVideoUrlEt.setText(post.videoUrl)
 
-                    //TODO: show and fill videoUrl
-
-                    newVideoUrlEt.setOnFocusChangeListener(::handleVideoUrl)
+                    newVideoUrlEt.setOnFocusChangeListener { _, _ -> Unit
+                        if (!updateVideoPreview()) return@setOnFocusChangeListener
+                    }
 
                     sendBtn.setOnClickListener {
                         val content = newContentTv.text.toString()
