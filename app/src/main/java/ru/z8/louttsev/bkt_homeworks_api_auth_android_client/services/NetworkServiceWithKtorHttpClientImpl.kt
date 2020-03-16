@@ -138,6 +138,23 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         }
     }
 
+    override fun updatePost(post: Post, completionListener: (successfully: Boolean) -> Unit) {
+        launch(Dispatchers.IO) {
+            try {
+                client.post<String>(POSTS.routeWith(post.id)) {
+                    header(HttpHeaders.Authorization, "Bearer $mytoken")
+                    contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
+                    body = Gson().toJsonTree(Post.fromModel(post))
+                }
+
+                withContext(Dispatchers.Main) { completionListener(true) }
+
+            } catch (cause: AuthorizationException) {
+                withContext(Dispatchers.Main) { completionListener(false) }
+            }
+        }
+    }
+
     override fun deletePost(postID: UUID, completionListener: (successfully: Boolean) -> Unit) {
         launch(Dispatchers.IO) {
             try {

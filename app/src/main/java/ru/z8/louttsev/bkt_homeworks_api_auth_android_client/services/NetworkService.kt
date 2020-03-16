@@ -14,6 +14,7 @@ interface NetworkService {
     fun updatePosts(currentCounter: Int, dataHandler: (posts: List<Post>?) -> Unit)
     fun updateAds(currentCounter: Int, dataHandler: (ads: List<AdsPost>?) -> Unit)
     fun savePost(post: Post, completionListener: (successfully: Boolean) -> Unit)
+    fun updatePost(post: Post, completionListener: (successfully: Boolean) -> Unit)
     fun deletePost(postID: UUID, completionListener: (successfully: Boolean) -> Unit)
     fun saveMedia(
         mediaUri: Uri,

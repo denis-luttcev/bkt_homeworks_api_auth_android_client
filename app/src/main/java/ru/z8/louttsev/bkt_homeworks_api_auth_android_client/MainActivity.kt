@@ -537,7 +537,7 @@ class MainActivity : AppCompatActivity() {
 
                     postAdapter.getLayoutFiller().updateImageView(post, newPreviewIv)
 
-                    //TODO: refill videoUrl EditText
+                    //TODO: show and fill videoUrl
 
                     newVideoUrlEt.setOnFocusChangeListener(::handleVideoUrl)
 
@@ -604,6 +604,7 @@ class MainActivity : AppCompatActivity() {
                     postAdapter.getLayoutFiller().updateImageView(post, newPreviewIv)
 
                     //TODO: show sources buttons
+                    //TODO: show and fill imageUrl
 
                     sendBtn.setOnClickListener {
                         val content = newContentTv.text.toString()
@@ -640,11 +641,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun update(post: Post, position: Int) {
-        //TODO: implement update request
-        //networkService.savePost(post, ::updatePostsInAdapter)
+        networkService.updatePost(post) {
+            if (!it) {
+                handleAuthorizationException()
+                return@updatePost
+            }
 
-        postAdapter.notifyDataSetChanged()
-        postListing.smoothScrollToPosition(position)
-        prepareNewTextPostBody()
+            postAdapter.notifyDataSetChanged()
+            postListing.smoothScrollToPosition(position)
+            prepareNewTextPostBody()
+        }
     }
 }
