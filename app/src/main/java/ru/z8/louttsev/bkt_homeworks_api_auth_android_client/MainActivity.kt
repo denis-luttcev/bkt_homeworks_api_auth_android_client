@@ -2,6 +2,7 @@ package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -190,16 +191,12 @@ class MainActivity : AppCompatActivity() {
 
         newGalleryBtn.visibility = View.VISIBLE
         newGalleryBtn.setOnClickListener {
-            startActivityForResult(Intent().apply {
-                action = Intent.ACTION_GET_CONTENT
-                type = "image/*"
-            }, GALLERY_REQUEST)
+            getImageContent()
         }
 
         newCameraBtn.visibility = View.VISIBLE
         newCameraBtn.setOnClickListener {
-            //TODO: implement make new image by camera
-            //TODO: implement update image preview
+            getCameraContent()
         }
 
         sendBtn.setOnClickListener {
@@ -236,6 +233,7 @@ class MainActivity : AppCompatActivity() {
                     val imageUri = data.data!!
 
                     newPreviewIv.setImageURI(imageUri)
+                    newPreviewIv.clearColorFilter()
 
                     newGalleryBtn.visibility = View.GONE
                     newCameraBtn.visibility = View.GONE
@@ -611,9 +609,19 @@ class MainActivity : AppCompatActivity() {
                     newPlayBtn.visibility = View.GONE
 
                     postAdapter.getLayoutFiller().updateImageView(post, newPreviewIv)
+                    newPreviewIv.tag = post.imageUrl
 
-                    //TODO: show sources buttons
-                    //TODO: show and fill imageUrl
+                    newPreviewIv.setColorFilter(Color.argb(150, 255, 255, 255))
+
+                    newGalleryBtn.visibility = View.VISIBLE
+                    newGalleryBtn.setOnClickListener {
+                        getImageContent()
+                    }
+
+                    newCameraBtn.visibility = View.VISIBLE
+                    newCameraBtn.setOnClickListener {
+                        getCameraContent()
+                    }
 
                     sendBtn.setOnClickListener {
                         val content = newContentTv.text.toString()
@@ -647,6 +655,18 @@ class MainActivity : AppCompatActivity() {
                 prepareNewTextPostBody()
             }
         }
+    }
+
+    private fun getImageContent() {
+        startActivityForResult(Intent().apply {
+            action = Intent.ACTION_GET_CONTENT
+            type = "image/*"
+        }, GALLERY_REQUEST)
+    }
+
+    private fun getCameraContent() {
+        //TODO: implement make new image by camera
+        //TODO: implement update image preview
     }
 
     private fun update(post: Post, position: Int) {
