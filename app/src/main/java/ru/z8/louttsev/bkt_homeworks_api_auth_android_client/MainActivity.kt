@@ -73,8 +73,8 @@ class MainActivity : AppCompatActivity() {
         currentUser.text = welcomeMessage
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
 
         networkService.cancellation()
     }

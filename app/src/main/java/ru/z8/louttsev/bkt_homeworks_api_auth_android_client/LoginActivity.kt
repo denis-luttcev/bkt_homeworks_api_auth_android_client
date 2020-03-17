@@ -23,19 +23,19 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        if (mytoken == null) {
-            networkService.cancellation()
-        }
-    }
-
     override fun onStart() {
         super.onStart()
 
         if (mytoken != null) {
             getUserAndStartMainActivity()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        if (mytoken == null) {
+            networkService.cancellation()
         }
     }
 

@@ -344,6 +344,6 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
     }
 
     override fun cancellation() {
-        cancel()
+        this.coroutineContext.cancelChildren()
     }
 }
