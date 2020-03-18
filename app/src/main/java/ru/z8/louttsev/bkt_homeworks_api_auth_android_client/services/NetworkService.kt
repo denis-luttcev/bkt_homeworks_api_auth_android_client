@@ -10,9 +10,9 @@ import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI.*
 import java.util.*
 
 interface NetworkService {
-    fun fetchAdapterData(dataHandler: (posts: List<Post>?, ads: List<AdsPost>?) -> Unit)
-    fun updatePosts(currentCounter: Int, dataHandler: (posts: List<Post>?) -> Unit)
-    fun updateAds(currentCounter: Int, dataHandler: (ads: List<AdsPost>?) -> Unit)
+    fun fetchData(dataHandler: (posts: List<Post>?, ads: List<AdsPost>?) -> Unit)
+    fun appendPosts(currentCounter: Int, dataHandler: (posts: List<Post>?) -> Unit)
+    fun appendAds(currentCounter: Int, dataHandler: (ads: List<AdsPost>?) -> Unit)
     fun savePost(post: Post, completionListener: (successfully: Boolean) -> Unit)
     fun updatePost(post: Post, completionListener: (successfully: Boolean) -> Unit)
     fun deletePost(postID: UUID, completionListener: (successfully: Boolean) -> Unit)

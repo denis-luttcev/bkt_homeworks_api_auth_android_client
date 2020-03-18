@@ -1,32 +1,30 @@
 package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
-import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
-import android.widget.Toast
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.activity_login.*
 
 @KtorExperimentalAPI
 class LoginActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        loginBtn.setOnClickListener(::login)
+        loginBtn.setOnClickListener {
+            login()
+        }
 
         registrationBtn.setOnClickListener {
-            startActivity(Intent(this@LoginActivity, RegistrationActivity::class.java))
+            startRegistrationActivity()
         }
     }
 
     override fun onStart() {
         super.onStart()
 
-        if (mytoken != null) {
+        if (User.isAuthenticated()) {
             getUserAndStartMainActivity()
         }
     }
@@ -34,54 +32,79 @@ class LoginActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        if (mytoken == null) {
-            networkService.cancellation()
+        if (!User.isAuthenticated()) {
+            cancelRequests()
         }
     }
 
-    private fun login(view: View) {
+    private fun getUserAndStartMainActivity() {
+        networkService.getMe { user ->
+            if (user == null) {
+                mytoken = null
+                getSharedPreferences(SECURITY, MODE_PRIVATE).edit().remove(TOKEN).apply()
+
+                return@getMe
+            }
+
+            myself = user
+            startMainActivity()
+            finish()
+        }
+    }
+
+    private fun cancelRequests() {
+        networkService.cancellation()
+    }
+
+    private fun startRegistrationActivity() {
+        startActivity(Intent(this@LoginActivity, RegistrationActivity::class.java))
+    }
+
+    private fun startMainActivity() {
+        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+    }
+
+    private fun login() {
         val login = loginEdt.text.toString()
         val password = passwordEdt.text.toString()
 
-        if (login.isEmpty() || password.isEmpty()) {
-            Toast.makeText(
-                this,
-                getString(R.string.authentication_data_error_message),
-                Toast.LENGTH_SHORT
-            ).show()
+        if (isCorrectInputted(login, password)) {
+            requestToken(login, password)
+        }
+    }
 
-            return
+    private fun isCorrectInputted(login: String, password: String): Boolean {
+        val condition = login.isNotEmpty() && login.isNotBlank()
+                && password.isNotEmpty() && password.isNotBlank()
+
+        if (!condition) {
+            makeToast(this, R.string.authentication_data_error_message)
+            clearFields()
         }
 
+        return condition
+    }
+
+    private fun clearFields() {
+        loginEdt.text.clear()
+        passwordEdt.text.clear()
+    }
+
+    private fun requestToken(login: String, password: String) {
         networkService.authenticate(login, password, ::checkAuthentication)
     }
 
     private fun checkAuthentication(token: String?) {
         if (token == null) {
-            Toast.makeText(
-                this,
-                getString(R.string.authentication_error_message),
-                Toast.LENGTH_SHORT
-            ).show()
-
-            loginEdt.text.clear()
-            passwordEdt.text.clear()
+            makeToast(this, R.string.authentication_error_message)
+            clearFields()
 
             return
         }
 
         mytoken = token
-        getSharedPreferences(SECURITY, Context.MODE_PRIVATE).edit().putString(TOKEN, mytoken).apply()
+        getSharedPreferences(SECURITY, MODE_PRIVATE).edit().putString(TOKEN, mytoken).apply()
 
         getUserAndStartMainActivity()
-    }
-
-    private fun getUserAndStartMainActivity() {
-        networkService.getMe { user ->
-            myself = user // nullable ignored
-
-            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-            finish()
-        }
     }
 }

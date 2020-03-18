@@ -8,34 +8,34 @@ import java.util.UUID
 private const val ADS_RATIO = 3 //  next ads after each 3 posts
 
 class PostRepositoryInMemoryImpl : PostRepository {
-    private val posts = mutableListOf<Post>()
+    private val postList = mutableListOf<Post>()
     private val hiddenPosts = mutableListOf<Post>()
-    private val ads = mutableListOf<AdsPost>()
-    private val adsIterator = ads.circularIterator()
+    private val adsList = mutableListOf<AdsPost>()
+    private val adsIterator = adsList.circularIterator()
 
     override fun addPosts(posts: List<Post>) {
         posts.reversed().forEach {
             if (it.isHide) {
                 hiddenPosts.add(it)
             } else {
-                this.posts.add(0, it)
+                postList.add(0, it)
             }
         }
     }
 
     override fun addAds(ads: List<AdsPost>) {
-        this.ads.addAll(ads)
+        adsList.addAll(ads)
     }
 
-    override fun getListItemCount() = posts.size + posts.size / ADS_RATIO
+    override fun getListItemCount() = postList.size + postList.size / ADS_RATIO
 
-    override fun getPostsCount() = posts.size + hiddenPosts.size
+    override fun getPostsCount() = postList.size + hiddenPosts.size
 
-    override fun getAdsCount() = ads.size
+    override fun getAdsCount() = adsList.size
 
     override fun getItemByPosition(itemPosition: Int) =
         if (isPostPosition(itemPosition)) {
-            posts[getPostPosition(itemPosition)]
+            postList[getPostPosition(itemPosition)]
         } else {
             adsIterator.next()
         }
@@ -50,7 +50,8 @@ class PostRepositoryInMemoryImpl : PostRepository {
     private fun isPostPosition(itemPosition: Int) = (itemPosition + 1) % (ADS_RATIO + 1) != 0
 
     override fun getPostById(id: UUID) : Post {
-        val post = posts.find { it.id == id }
+        val post = postList.find { it.id == id }
+
         if (post != null) {
             return post
         } else {
@@ -58,7 +59,7 @@ class PostRepositoryInMemoryImpl : PostRepository {
         }
     }
 
-    override fun getPostByPosition(position: Int): Post = posts[position]
+    override fun getPostByPosition(position: Int): Post = postList[position]
 
     override fun findRepostSource(post: Repost): Post {
         val sourcePost = getPostById(post.source!!)
@@ -68,12 +69,12 @@ class PostRepositoryInMemoryImpl : PostRepository {
 
     override fun hidePost(post: Post) {
         post.hide()
-        posts.remove(post)
+        postList.remove(post)
         hiddenPosts.add(post)
     }
 
     override fun deletePost(post: Post) {
-        posts.remove(post)
+        postList.remove(post)
     }
 }
 

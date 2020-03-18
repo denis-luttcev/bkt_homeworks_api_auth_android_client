@@ -2,7 +2,7 @@
     <string name="app_name">Social network</string>
     <string name="main_activity_name">List of posts</string>
     <string name="welcome">"Welcome, "</string>
-    <string name="login_activity_name">Sign in</string>
+    <string name="login_activity_name">Login</string>
     <string name="registration_activity_name">New user</string>
     <string name="hide">Hide</string>
     <string name="delete">Delete</string>

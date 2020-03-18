@@ -64,7 +64,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         }
     }
 
-    override fun fetchAdapterData(dataHandler: (posts: List<Post>?, ads: List<AdsPost>?) -> Unit) {
+    override fun fetchData(dataHandler: (posts: List<Post>?, ads: List<AdsPost>?) -> Unit) {
         launch(Dispatchers.IO) {
             try {
                 val postsRequest = async {
@@ -83,13 +83,13 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 withContext(Dispatchers.Main) { dataHandler(posts, ads) }
 
-            } catch (cause: AuthorizationException) {
+            } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { dataHandler(null, null) }
             }
         }
     }
 
-    override fun updatePosts(currentCounter: Int, dataHandler: (posts: List<Post>?) -> Unit) {
+    override fun appendPosts(currentCounter: Int, dataHandler: (posts: List<Post>?) -> Unit) {
         launch(Dispatchers.IO) {
             try {
                 val posts = client.get<List<Post>>(POSTS.routeWith(currentCounter)) {
@@ -98,13 +98,13 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 withContext(Dispatchers.Main) { dataHandler(posts) }
 
-            } catch (cause: AuthorizationException) {
+            } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { dataHandler(null) }
             }
         }
     }
 
-    override fun updateAds(currentCounter: Int, dataHandler: (ads: List<AdsPost>?) -> Unit) {
+    override fun appendAds(currentCounter: Int, dataHandler: (ads: List<AdsPost>?) -> Unit) {
         launch(Dispatchers.IO) {
             try {
                 val ads = client.get<List<AdsPost>>(ADS.routeWith(currentCounter)) {
@@ -113,7 +113,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 withContext(Dispatchers.Main) { dataHandler(ads) }
 
-            } catch (cause: AuthorizationException) {
+            } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { dataHandler(null) }
             }
         }
@@ -132,7 +132,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 withContext(Dispatchers.Main) { completionListener(true) }
 
-            } catch (cause: AuthorizationException) {
+            } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { completionListener(false) }
             }
         }
@@ -149,6 +149,8 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 withContext(Dispatchers.Main) { completionListener(true) }
 
+            } catch (cause: AuthenticationException) {
+                withContext(Dispatchers.Main) { completionListener(false) }
             } catch (cause: AuthorizationException) {
                 withContext(Dispatchers.Main) { completionListener(false) }
             }
@@ -164,6 +166,8 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 withContext(Dispatchers.Main) { completionListener(true) }
 
+            } catch (cause: AuthenticationException) {
+                withContext(Dispatchers.Main) { completionListener(false) }
             } catch (cause: AuthorizationException) {
                 withContext(Dispatchers.Main) { completionListener(false) }
             }
@@ -233,7 +237,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 withContext(Dispatchers.Main) { dataHandler(media.imageUrl, null) }
 
-            } catch (cause: AuthorizationException) {
+            } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { dataHandler(null, cause) }
             } catch (cause: UnsupportedMediaTypeException) {
                 withContext(Dispatchers.Main) { dataHandler(null, cause) }
@@ -263,7 +267,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 withContext(Dispatchers.Main) { completionListener(null) }
 
-            } catch (cause: AuthorizationException) {
+            } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { completionListener(cause) }
             } catch (cause: LockedException) {
                 withContext(Dispatchers.Main) { completionListener(cause) }
@@ -281,7 +285,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
                 withContext(Dispatchers.Main) { dataHandler(image) }
 
-            } catch (cause: AuthorizationException) {
+            } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { dataHandler(null) }
             }
         }
@@ -337,7 +341,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
                 }
 
                 withContext(Dispatchers.Main) { dataHandler(me) }
-            } catch (cause: AuthorizationException) {
+            } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { dataHandler(null) }
             }
         }

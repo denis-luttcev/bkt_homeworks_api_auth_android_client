@@ -2,6 +2,7 @@ package ru.z8.louttsev.bkt_homeworks_api_auth_android_client
 
 import android.app.Application
 import android.content.Context
+import android.widget.Toast
 import io.ktor.util.KtorExperimentalAPI
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
@@ -39,29 +40,21 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val sharedPreferences = getSharedPreferences(SECURITY, Context.MODE_PRIVATE)
-
+        val sharedPreferences = getSharedPreferences(SECURITY, MODE_PRIVATE)
         mytoken = sharedPreferences.getString(TOKEN, null)
-
-        if (mytoken != null) {
-            networkService.getMe {
-                if (it != null) {
-
-                    myself = it
-
-                } else {
-
-                    mytoken = null
-
-                    sharedPreferences.edit().remove("token").apply()
-                }
-            }
-        }
     }
 }
 
 data class User(val id: UUID, val username: String) {
+    companion object {
+        fun isAuthenticated() = mytoken != null
+    }
+
     data class RegistrationRequestDto(val username: String, val login: String, val password: String)
     data class AuthenticationRequestDto(val login: String, val password: String)
     data class AuthenticationResponseDto(val token: String)
+}
+
+fun makeToast(context: Context, stringID: Int) {
+    Toast.makeText(context, context.getString(stringID), Toast.LENGTH_SHORT).show()
 }
