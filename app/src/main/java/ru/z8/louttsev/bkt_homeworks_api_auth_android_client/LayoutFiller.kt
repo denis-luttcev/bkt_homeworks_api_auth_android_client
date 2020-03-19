@@ -26,26 +26,14 @@ import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI.*
 class LayoutFiller(private val activity: MainActivity) {
     private val adapter = PostAdapter(this)
 
+    fun notifyDataSetChanged() {
+        adapter.notifyDataSetChanged()
+    }
+
     fun initViews() {
         with(activity) {
             postListing.layoutManager = LinearLayoutManager(this)
             postListing.adapter = adapter
-
-            swipeContainer.isRefreshing = true
-
-            networkService.fetchData { posts: List<Post>?, ads: List<AdsPost>? ->
-                if (posts != null && ads != null) {
-                    repository.addPosts(posts)
-                    repository.addAds(ads)
-
-                    adapter.notifyDataSetChanged()
-
-                    swipeContainer.isRefreshing = false
-
-                } else {
-                    handleAuthorizationException()
-                }
-            }
 
             swipeContainer.setOnRefreshListener {
                 networkService.appendAds(repository.getAdsCount()) {
@@ -67,19 +55,9 @@ class LayoutFiller(private val activity: MainActivity) {
         }
     }
 
-    private fun handleAuthorizationException() {
-        with (activity) {
-            Toast.makeText(
-                this,
-                getString(R.string.authorization_error_message),
-                Toast.LENGTH_SHORT
-            ).show()
 
-            swipeContainer.isRefreshing = false
 
-            startLoginActivity()
-        }
-    }
+
 
     private fun updatePostsInAdapter(successfully: Boolean) {
         with(activity) {
