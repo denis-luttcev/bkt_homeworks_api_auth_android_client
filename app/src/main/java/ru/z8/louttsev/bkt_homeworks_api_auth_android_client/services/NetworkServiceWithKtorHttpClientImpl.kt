@@ -24,7 +24,7 @@ import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.AdsPost
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.Media
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.Post
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.datamodel.PostDeserializer
-import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.mytoken
+import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.sMyToken
 import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.SchemaAPI.*
 import java.net.URL
 import java.util.*
@@ -44,6 +44,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
                 registerTypeAdapter(Post::class.java, PostDeserializer())
             }
         }
+
         HttpResponseValidator {
             validateResponse { response ->
                 when (response.status) {
@@ -69,12 +70,12 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
             try {
                 val postsRequest = async {
                     client.get<List<Post>>(POSTS.route) {
-                        header(HttpHeaders.Authorization, "Bearer $mytoken")
+                        header(HttpHeaders.Authorization, "Bearer $sMyToken")
                     }
                 }
                 val adsRequest = async {
                     client.get<List<AdsPost>>(ADS.route) {
-                        header(HttpHeaders.Authorization, "Bearer $mytoken")
+                        header(HttpHeaders.Authorization, "Bearer $sMyToken")
                     }
                 }
 
@@ -93,7 +94,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         launch(Dispatchers.IO) {
             try {
                 val posts = client.get<List<Post>>(POSTS.routeWith(currentCounter)) {
-                    header(HttpHeaders.Authorization, "Bearer $mytoken")
+                    header(HttpHeaders.Authorization, "Bearer $sMyToken")
                 }
 
                 withContext(Dispatchers.Main) { dataHandler(posts) }
@@ -108,7 +109,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         launch(Dispatchers.IO) {
             try {
                 val ads = client.get<List<AdsPost>>(ADS.routeWith(currentCounter)) {
-                    header(HttpHeaders.Authorization, "Bearer $mytoken")
+                    header(HttpHeaders.Authorization, "Bearer $sMyToken")
                 }
 
                 withContext(Dispatchers.Main) { dataHandler(ads) }
@@ -123,7 +124,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         launch(Dispatchers.IO) {
             try {
                 val permanentID = client.post<UUID>(POSTS.route) {
-                    header(HttpHeaders.Authorization, "Bearer $mytoken")
+                    header(HttpHeaders.Authorization, "Bearer $sMyToken")
                     contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                     body = Gson().toJsonTree(Post.fromModel(post))
                 }
@@ -142,7 +143,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         launch(Dispatchers.IO) {
             try {
                 client.post<String>(POSTS.routeWith(post.id)) {
-                    header(HttpHeaders.Authorization, "Bearer $mytoken")
+                    header(HttpHeaders.Authorization, "Bearer $sMyToken")
                     contentType(ContentType.Application.Json.withCharset(Charsets.UTF_8))
                     body = Gson().toJsonTree(Post.fromModel(post))
                 }
@@ -161,7 +162,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         launch(Dispatchers.IO) {
             try {
                 client.delete<String>(POSTS.routeWith(postID)) {
-                    header(HttpHeaders.Authorization, "Bearer $mytoken")
+                    header(HttpHeaders.Authorization, "Bearer $sMyToken")
                 }
 
                 withContext(Dispatchers.Main) { completionListener(true) }
@@ -174,12 +175,9 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         }
     }
 
-    override fun saveMedia(
-        mediaUri: Uri,
-        context: Context,
+    override fun saveMedia(mediaUri: Uri, context: Context,
         dataHandler: (permanentUrl: String?, cause: Throwable?) -> Unit
     ) {
-
         val filename = try {
             context.contentResolver.query(
                 mediaUri,
@@ -193,6 +191,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
                     else null
                 }.also { cursor.close() }
             }
+
         } catch (cause : Exception) {
             dataHandler(null, cause)
             return
@@ -208,7 +207,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         launch(Dispatchers.IO) {
             try {
                 val media = client.post<Media>(MEDIA.route) {
-                    header(HttpHeaders.Authorization, "Bearer $mytoken")
+                    header(HttpHeaders.Authorization, "Bearer $sMyToken")
                     body = MultiPartFormDataContent(
                         formData {
                             append(
@@ -245,23 +244,19 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         }
     }
 
-    override fun updateSocial(
-        postID: UUID,
-        action: SocialAction,
-        mode: Mode,
+    override fun updateSocial(postID: UUID, action: SocialAction, mode: Mode,
         completionListener: (cause: Throwable?) -> Unit
     ) {
-
         launch(Dispatchers.IO) {
             val url = POSTS.routeWith(postID, action)
 
             try {
                 when (mode) {
                     Mode.POST -> client.post<String>(url) {
-                        header(HttpHeaders.Authorization, "Bearer $mytoken")
+                        header(HttpHeaders.Authorization, "Bearer $sMyToken")
                     }
                     Mode.DELETE -> client.delete<String>(url) {
-                        header(HttpHeaders.Authorization, "Bearer $mytoken")
+                        header(HttpHeaders.Authorization, "Bearer $sMyToken")
                     }
                 }
 
@@ -279,7 +274,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         launch(Dispatchers.IO) {
             try {
                 val connection = URL(mediaUrl).openConnection()
-                connection.setRequestProperty(HttpHeaders.Authorization, "Bearer $mytoken")
+                connection.setRequestProperty(HttpHeaders.Authorization, "Bearer $sMyToken")
 
                 val image = BitmapFactory.decodeStream(connection.getInputStream())
 
@@ -291,10 +286,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
         }
     }
 
-    override fun registrate(
-        username: String,
-        login: String,
-        password: String,
+    override fun registrate(username: String, login: String, password: String,
         dataHandler: (token: String?, message: String?) -> Unit
     ) {
         launch(Dispatchers.IO) {
@@ -308,6 +300,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
                 }
 
                 withContext(Dispatchers.Main) { dataHandler(response.token, null) }
+
             } catch (cause: BadRequestException) {
                 withContext(Dispatchers.Main) { dataHandler(null, cause.message) }
             }
@@ -326,6 +319,7 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
                 }
 
                 withContext(Dispatchers.Main) { dataHandler(response.token) }
+
             } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { dataHandler(null) }
             }
@@ -334,13 +328,13 @@ class NetworkServiceWithKtorHttpClientImpl : CoroutineScope by MainScope(), Netw
 
     override fun getMe(dataHandler: (user: User?) -> Unit) {
         launch(Dispatchers.IO) {
-
             try {
                 val me = client.get<User>(ME.route) {
-                    header(HttpHeaders.Authorization, "Bearer $mytoken")
+                    header(HttpHeaders.Authorization, "Bearer $sMyToken")
                 }
 
                 withContext(Dispatchers.Main) { dataHandler(me) }
+
             } catch (cause: AuthenticationException) {
                 withContext(Dispatchers.Main) { dataHandler(null) }
             }

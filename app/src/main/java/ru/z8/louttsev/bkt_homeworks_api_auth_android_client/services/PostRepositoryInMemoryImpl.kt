@@ -13,6 +13,8 @@ class PostRepositoryInMemoryImpl : PostRepository {
     private val adsList = mutableListOf<AdsPost>()
     private val adsIterator = adsList.circularIterator()
 
+    override fun isEmpty(): Boolean = postList.isEmpty() && adsList.isEmpty()
+
     override fun addPosts(posts: List<Post>) {
         posts.reversed().forEach {
             if (it.isHide) {
@@ -43,6 +45,7 @@ class PostRepositoryInMemoryImpl : PostRepository {
     override fun getPostPosition(itemPosition: Int) =
         if (isPostPosition(itemPosition)) {
             itemPosition - (itemPosition + 1) / (ADS_RATIO + 1)
+
         } else {
             -1
         }
@@ -52,10 +55,10 @@ class PostRepositoryInMemoryImpl : PostRepository {
     override fun getPostById(id: UUID) : Post {
         val post = postList.find { it.id == id }
 
-        if (post != null) {
-            return post
+        return if (post != null) {
+            post
         } else {
-            return hiddenPosts.find { it.id == id }!!
+            hiddenPosts.find { it.id == id }!!
         }
     }
 

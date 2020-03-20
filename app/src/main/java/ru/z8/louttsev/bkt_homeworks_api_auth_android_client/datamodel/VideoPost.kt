@@ -5,8 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import java.util.UUID
 
-fun parseVideoUrl(url : String) = "https://img.youtube.com/vi/${Regex("""v=""").split(url)[1]}/maxresdefault.jpg"
-
 class VideoPost(
     id : UUID = UUID.randomUUID(),
     author : String = "",
@@ -24,6 +22,10 @@ class VideoPost(
     var videoUrl : String = ""
 ) : Post(id, Type.VIDEO, author, isMy, isHide, content, created, liked, likes, commented, comments, shared, shares, views)
 {
+    companion object {
+        fun parseVideoUrl(url : String) = "https://img.youtube.com/vi/${Regex("""v=""").split(url)[1]}/maxresdefault.jpg"
+    }
+
     class RequestDto(model: VideoPost) : Post.RequestDto(model) {
         val videoUrl: String = model.videoUrl
     }

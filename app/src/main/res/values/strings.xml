@@ -14,7 +14,6 @@
     <string name="event_address_error_message">Enter event address</string>
     <string name="video_url_hint">Enter YouTube video url</string>
     <string name="video_url_error_message">Enter correct YouTube video url</string>
-    <string name="repost_text_default">Reposted</string>
     <string name="username_label">Username</string>
     <string name="login_label">Login</string>
     <string name="password_label">Password</string>

@@ -15,7 +15,7 @@ import ru.z8.louttsev.bkt_homeworks_api_auth_android_client.services.PostReposit
 import java.util.UUID
 
 @KtorExperimentalAPI
-val kodein = Kodein{
+val sKodein = Kodein{
     bind<NetworkService>() with eagerSingleton {
         NetworkServiceWithKtorHttpClientImpl()
     }
@@ -25,12 +25,12 @@ val kodein = Kodein{
 }
 
 @KtorExperimentalAPI
-val networkService by kodein.instance<NetworkService>()
+val sNetworkService by sKodein.instance<NetworkService>()
 @KtorExperimentalAPI
-val repository by kodein.instance<PostRepository>()
+val sRepository by sKodein.instance<PostRepository>()
 
-var mytoken: String? = null
-var myself: User? = null
+var sMyToken: String? = null
+var sMyself: User? = null
 
 const val SECURITY = "security"
 const val TOKEN = "token"
@@ -41,13 +41,13 @@ class App : Application() {
         super.onCreate()
 
         val sharedPreferences = getSharedPreferences(SECURITY, MODE_PRIVATE)
-        mytoken = sharedPreferences.getString(TOKEN, null)
+        sMyToken = sharedPreferences.getString(TOKEN, null)
     }
 }
 
 data class User(val id: UUID, val username: String) {
     companion object {
-        fun isAuthenticated() = mytoken != null
+        fun isAuthenticated() = sMyToken != null
     }
 
     data class RegistrationRequestDto(val username: String, val login: String, val password: String)

@@ -10,14 +10,21 @@ import kotlinx.android.synthetic.main.activity_login.*
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
 
-        loginBtn.setOnClickListener {
-            login()
-        }
+        if (User.isAuthenticated()) {
+            getUserAndStartMainActivity()
+            finish()
 
-        registrationBtn.setOnClickListener {
-            startRegistrationActivity()
+        } else {
+            setContentView(R.layout.activity_login)
+
+            loginBtn.setOnClickListener {
+                login()
+            }
+
+            registrationBtn.setOnClickListener {
+                startRegistrationActivity()
+            }
         }
     }
 
@@ -48,35 +55,32 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun requestToken(login: String, password: String) {
-        networkService.authenticate(login, password, ::checkAuthentication)
+        sNetworkService.authenticate(login, password, ::checkAuthentication)
     }
 
     private fun checkAuthentication(token: String?) {
-        if (token == null) {
+        if (token != null) {
+            sMyToken = token
+            getSharedPreferences(SECURITY, MODE_PRIVATE).edit().putString(TOKEN, sMyToken).apply()
+
+            getUserAndStartMainActivity()
+
+        } else {
             makeToast(this, R.string.authentication_error_message)
             clearFields()
-
-            return
         }
-
-        mytoken = token
-        getSharedPreferences(SECURITY, MODE_PRIVATE).edit().putString(TOKEN, mytoken).apply()
-
-        getUserAndStartMainActivity()
     }
 
     private fun getUserAndStartMainActivity() {
-        networkService.getMe { user ->
-            if (user == null) {
-                mytoken = null
+        sNetworkService.getMe { user ->
+            if (user != null) {
+                sMyself = user
+                startMainActivity()
+
+            } else {
+                sMyToken = null
                 getSharedPreferences(SECURITY, MODE_PRIVATE).edit().remove(TOKEN).apply()
-
-                return@getMe
             }
-
-            myself = user
-            startMainActivity()
-            finish()
         }
     }
 
@@ -88,14 +92,6 @@ class LoginActivity : AppCompatActivity() {
         startActivity(Intent(this@LoginActivity, MainActivity::class.java))
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        if (User.isAuthenticated()) {
-            getUserAndStartMainActivity()
-        }
-    }
-
     override fun onStop() {
         super.onStop()
 
@@ -105,6 +101,6 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun cancelRequests() {
-        networkService.cancellation()
+        sNetworkService.cancellation()
     }
 }

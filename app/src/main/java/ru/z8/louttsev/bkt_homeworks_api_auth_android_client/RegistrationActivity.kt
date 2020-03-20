@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.widget.Toast
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.activity_registration.*
-import kotlinx.android.synthetic.main.activity_registration.loginEdt
-import kotlinx.android.synthetic.main.activity_registration.passwordEdt
 
 @KtorExperimentalAPI
 class RegistrationActivity : AppCompatActivity() {
@@ -35,11 +33,12 @@ class RegistrationActivity : AppCompatActivity() {
         password: String,
         username: String,
         passwordConfirmation: String
-    ) = checkLoginAndPassword(login, password)
-            && checkUsername(username)
-            && isConfirmed(password, passwordConfirmation)
+    )
+            = validateLoginAndPassword(login, password)
+            && validateUsername(username)
+            && checkConfirmation(password, passwordConfirmation)
 
-    private fun checkLoginAndPassword(login: String, password: String): Boolean {
+    private fun validateLoginAndPassword(login: String, password: String): Boolean {
         val condition = login.isNotEmpty() && login.isNotBlank()
                 && password.isNotEmpty() && password.isNotBlank()
 
@@ -58,7 +57,7 @@ class RegistrationActivity : AppCompatActivity() {
         passwordConfirmationEdt.text.clear()
     }
 
-    private fun checkUsername(username: String): Boolean {
+    private fun validateUsername(username: String): Boolean {
         val condition = username.isNotEmpty() && username.isNotBlank()
 
         if (!condition) {
@@ -69,7 +68,7 @@ class RegistrationActivity : AppCompatActivity() {
         return condition
     }
 
-    private fun isConfirmed(password: String, passwordConfirmation: String): Boolean {
+    private fun checkConfirmation(password: String, passwordConfirmation: String): Boolean {
         val condition = password == passwordConfirmation
 
         if (!condition) {
@@ -81,18 +80,17 @@ class RegistrationActivity : AppCompatActivity() {
     }
 
     private fun requestRegistration(username: String, login: String, password: String) {
-        networkService.registrate(username, login, password, ::checkAuthentication)
+        sNetworkService.registrate(username, login, password, ::checkAuthentication)
     }
 
     private fun checkAuthentication(token: String?, message: String?) {
-        if (token == null) {
+        if (token != null) {
+            sMyToken = token
+            finish()
+
+        } else {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             clearFields()
-
-            return
         }
-
-        mytoken = token
-        finish()
     }
 }
